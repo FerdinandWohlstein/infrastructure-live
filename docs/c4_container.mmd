@@ -1,44 +1,93 @@
 graph TB
-    subgraph Provider_Network [VPS / Cloud Network Virtual Private Cloud]
-        
-        subgraph Management_Layer [Persistence & State - Management Plane]
-            PG[(PostgreSQL - K3s Datastore)]
-            Vault[(HashiCorp Vault - Secrets)]
-        end
+    %% C4 Container View - wording
+    subgraph Deployment_Node [Deployment Node: Single VPS]
+        direction TB
 
-        subgraph K3s_Cluster [K3s Orchestration - Control & Data Plane]
+        subgraph System_Boundary [Software System: Self-Hosted Platform]
             direction TB
-            
-            subgraph Control_Plane [Control Plane]
-                API[K8s API Server]
-                Argo[ArgoCD GitOps]
+
+            subgraph Edge_Security [Containers: Edge and Access]
+                WG[Container: WireGuard VPN
+                ISO 27001: A.9.2.1]
+                Ingress[Container: Traefik Ingress]
+                CM[Container: cert-manager
+                ACME TLS]
             end
 
-            subgraph Networking_eBPF [Connectivity Layer]
-                Cilium[Cilium CNI / Hubble]
+            %% Host-level services (not running on Kubernetes)
+            subgraph Host_Services [Containers: Host-level Services
+            Not on Kubernetes]
+                Vault[(Container: HashiCorp Vault
+                Secrets Management
+                ISO 27001: A.10.1)]
             end
 
-            subgraph Runtime_Workloads [Worker Nodes / Workloads]
-                App[Production App]
-                Obs[LGTM Stack]
-            end
-        end
+            subgraph K3s_Cluster [Container: K3s Cluster
+            Single-Node First]
+                direction TB
 
-        subgraph Edge_Security [Access Layer]
-            WG[WireGuard VPN Gateway]
-            Ingress[Traefik / Ingress Controller]
+                subgraph Node [Container: K3s Node
+                Control Plane and Worker]
+                    API[Container: Kubernetes API Server]
+                    Argo[Container: Argo CD
+                    GitOps
+                    ISO 27001: A.12.1.2]
+
+                    subgraph Networking [Container: CNI and Networking]
+                        Cilium[Container: Cilium
+                        CNI and Hubble
+                        ISO 27001: A.13.1.1]
+                    end
+
+                    subgraph Platform [Containers: Platform Services]
+                        ESO[Container: External Secrets Operator
+                        Syncs external secrets into Kubernetes
+                        ISO 27001: A.10.1]
+                    end
+
+                    subgraph Runtime_Workloads [Containers: Workloads]
+                        App[Container: Production App]
+                        Obs[Container: Observability
+                            LGTM Stack]
+                    end
+                end
+            end
+
+            subgraph Persistence [Containers: Persistence and State]
+                DS[(Container: K3s Datastore
+                SQLite for MVP / Postgres for learning)]
+            end
         end
     end
 
-    %% Key Relationships showing Architectural Intent
-    API -- "External State (SQL)" --> PG
-    App -- "Fetches Secrets" --> Vault
-    WG -- "Admin Access" --> API
-    Ingress -- "Public Traffic" --> App
-    Cilium -- "Intercepts/Secures" --> App
-    Argo -- "Deploys to" --> Runtime_Workloads
+    subgraph External [External System: Object Storage
+    Low-Cost]
+        Obj[(External System: S3-Compatible Object Storage
+        Backups / Artifacts)]
+    end
+
+    %% Key Relationships (intent)
+    WG -- "Admin access" --> API
+    Ingress -- "Public traffic HTTPS" --> App
+    CM -- "Issues/Renews certs" --> Ingress
+
+    API -- "State" --> DS
+
+    Argo -- "Applies desired state" --> Runtime_Workloads
+    Cilium -- "Policies/observability" --> Runtime_Workloads
+
+    %% Secrets flow: ESO pulls from Vault and writes into Kubernetes
+    ESO -- "Pulls secrets" --> Vault
+    ESO -- "Creates/updates Kubernetes Secrets used by" --> App
+
+    DS -- "Backups
+    ISO 27001: A.17.1.2" --> Obj
+    Vault -- "Backups or snapshots
+    ISO 27001: A.17.1.2" --> Obj
+    Obs -- "Export/Backups optional" --> Obj
 
     %% Styling for Clarity
-    style Management_Layer fill:#f5f5f5,stroke:#333,stroke-width:2px
-    style K3s_Cluster fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     style Edge_Security fill:#fff3e0,stroke:#e65100
+    style K3s_Cluster fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style Persistence fill:#f5f5f5,stroke:#333,stroke-width:2px
+    style External fill:#bbf,stroke:#333,stroke-dasharray: 5 5

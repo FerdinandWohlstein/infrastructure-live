@@ -1,0 +1,41 @@
+graph TB
+    %% Trust boundaries - threat-model-lite (learning)
+
+    subgraph Internet [Trust Boundary: Public Internet]
+        PublicUser((Public User))
+    end
+
+    subgraph DNS_Edge [Trust Boundary: External DNS and TLS Edge]
+        DNS[External System: DNS and TLS Edge]
+    end
+
+    subgraph VPS [Trust Boundary: Single VPS]
+        subgraph Edge [Edge]
+            Ingress[Container: Traefik Ingress]
+        end
+
+        subgraph Private_Admin [Trust Boundary: Admin Network]
+            WG[Container: WireGuard VPN]
+            Admin((Admin User))
+        end
+
+        subgraph Cluster [Trust Boundary: K3s Cluster]
+            API[Container: Kubernetes API]
+            App[Container: Production App]
+            ESO[Container: External Secrets Operator]
+        end
+
+        subgraph Host_Level [Trust Boundary: Host-level Services]
+            Vault[(Container: HashiCorp Vault)]
+        end
+    end
+
+    PublicUser -->|HTTPS| DNS
+    DNS -->|HTTPS| Ingress
+    Ingress -->|Routes| App
+
+    Admin -->|VPN| WG
+    WG -->|Private access| API
+
+    ESO -->|Pulls secrets| Vault
+    ESO -->|Writes Kubernetes Secrets| App
