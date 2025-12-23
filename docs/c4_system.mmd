@@ -1,24 +1,61 @@
 graph TD
-    User((DevOps Engineer))
-    PublicUser((Public End User))
+    %% C4 System Context - wording
+    User((Person: DevOps Engineer))
+    PublicUser((Person: Public End User))
 
-    subgraph External_Services [SaaS & External]
-        GitHub[GitHub / GitLab]
-        Registry[Container Registry]
-        DNS[Cloudflare / Route53]
+    subgraph External_Systems [External Systems]
+        Git[External System: Git Hosting
+        GitHub / GitLab]
+        CI[External System: CI Pipeline
+        GitHub Actions / GitLab CI]
+        Registry[External System: Container Registry]
+        DNS[External System: DNS and TLS Edge
+        Cloudflare / Route53]
+        Obj[(External System: Object Storage
+        S3-Compatible
+            Backups / Artifacts)]
     end
 
-    subgraph Infrastructure [AWS EC2 Instances]
-        K3sCluster[K3s Production Cluster]
+    subgraph System_Boundary [Software System: Self-Hosted Platform
+    Single VPS 10-15 EUR
+    K3s - Single-Node First]
+        WG[Container: WireGuard VPN
+        ISO 27001: A.9.2.1]
+        API[Container: Kubernetes API
+            6443]
+        Argo[Container: Argo CD
+        GitOps Sync
+        ISO 27001: A.12.1.2]
+        Ingress[Container: Traefik Ingress
+            443
+            ISO 27001: A.13.1.1]
+        App[Container: Production App]
+        Obs[Container: Observability
+            LGTM Stack]
     end
 
-    %% Relationships
-    User -- "Pushes Code / Manages" --> GitHub
-    User -- "Secure Access (WireGuard)" --> K3sCluster
-    GitHub -- "Triggers CI/CD" --> K3sCluster
-    K3sCluster -- "Pulls Images" --> Registry
-    PublicUser -- "HTTPS (Port 443)" --> DNS
-    DNS -- "Routes Traffic" --> K3sCluster
+    %% Dev + Delivery
+    User -- "Pushes manifests & app code" --> Git
+    Git -- "Triggers" --> CI
+    CI -- "Build & push image" --> Registry
+    Argo -- "Pulls desired state" --> Git
 
-    style Infrastructure fill:#f9f,stroke:#333,stroke-width:2px
-    style External_Services fill:#bbf,stroke:#333,stroke-dasharray: 5 5
+    %% Traffic
+    PublicUser -- "HTTPS" --> DNS
+    DNS -- "Routes" --> Ingress
+    Ingress -- "Routes" --> App
+
+    %% Admin / Private Control Plane
+    User -- "VPN" --> WG
+    WG -- "Private access" --> API
+    WG -- "Private access" --> Argo
+
+    %% Runtime dependencies
+    App -- "Pull image" --> Registry
+    App -- "Metrics/Logs/Traces" --> Obs
+
+    %% Backups - budget-friendly
+    System_Boundary -- "Backups" --> Obj
+
+    style System_Boundary fill:#f9f,stroke:#333,stroke-width:2px
+    style External_Systems fill:#bbf,stroke:#333,stroke-dasharray: 5 5
