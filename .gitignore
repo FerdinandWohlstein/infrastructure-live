@@ -35,3 +35,20 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Ansible
+*.retry
+
+# Kubernetes
+# Helm
+.helm/
+
+# Kustomize
+.kustomize/
+
+# General
+.DS_Store
+*.log
+*.tmp
+.vscode/
+.idea/
