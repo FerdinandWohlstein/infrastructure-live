@@ -1,0 +1,24 @@
+graph TD
+    User((DevOps Engineer))
+    PublicUser((Public End User))
+
+    subgraph External_Services [SaaS & External]
+        GitHub[GitHub / GitLab]
+        Registry[Container Registry]
+        DNS[Cloudflare / Route53]
+    end
+
+    subgraph Infrastructure [AWS EC2 Instances]
+        K3sCluster[K3s Production Cluster]
+    end
+
+    %% Relationships
+    User -- "Pushes Code / Manages" --> GitHub
+    User -- "Secure Access (WireGuard)" --> K3sCluster
+    GitHub -- "Triggers CI/CD" --> K3sCluster
+    K3sCluster -- "Pulls Images" --> Registry
+    PublicUser -- "HTTPS (Port 443)" --> DNS
+    DNS -- "Routes Traffic" --> K3sCluster
+
+    style Infrastructure fill:#f9f,stroke:#333,stroke-width:2px
+    style External_Services fill:#bbf,stroke:#333,stroke-dasharray: 5 5

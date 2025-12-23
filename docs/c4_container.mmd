@@ -1,0 +1,44 @@
+graph TB
+    subgraph Provider_Network [VPS / Cloud Network Virtual Private Cloud]
+        
+        subgraph Management_Layer [Persistence & State - Management Plane]
+            PG[(PostgreSQL - K3s Datastore)]
+            Vault[(HashiCorp Vault - Secrets)]
+        end
+
+        subgraph K3s_Cluster [K3s Orchestration - Control & Data Plane]
+            direction TB
+            
+            subgraph Control_Plane [Control Plane]
+                API[K8s API Server]
+                Argo[ArgoCD GitOps]
+            end
+
+            subgraph Networking_eBPF [Connectivity Layer]
+                Cilium[Cilium CNI / Hubble]
+            end
+
+            subgraph Runtime_Workloads [Worker Nodes / Workloads]
+                App[Production App]
+                Obs[LGTM Stack]
+            end
+        end
+
+        subgraph Edge_Security [Access Layer]
+            WG[WireGuard VPN Gateway]
+            Ingress[Traefik / Ingress Controller]
+        end
+    end
+
+    %% Key Relationships showing Architectural Intent
+    API -- "External State (SQL)" --> PG
+    App -- "Fetches Secrets" --> Vault
+    WG -- "Admin Access" --> API
+    Ingress -- "Public Traffic" --> App
+    Cilium -- "Intercepts/Secures" --> App
+    Argo -- "Deploys to" --> Runtime_Workloads
+
+    %% Styling for Clarity
+    style Management_Layer fill:#f5f5f5,stroke:#333,stroke-width:2px
+    style K3s_Cluster fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style Edge_Security fill:#fff3e0,stroke:#e65100
