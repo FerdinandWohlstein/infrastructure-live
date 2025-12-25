@@ -29,7 +29,7 @@ A lightweight trust-boundary view lives in [docs/security_trust_boundaries.mmd](
 
 ## Practical hardening checklist (budget-friendly)
 
-- Default-deny firewall on the VPS; expose only `443/80` to the public, keep `6443` private behind WireGuard.
+- Default-deny firewall on the VPS; expose `443/80` only to allow-listed Admin CIDRs (initial setup), keep `6443` private behind WireGuard.
 - Enable NetworkPolicies (Cilium) at least for critical namespaces.
 - Enforce PR reviews for GitOps repos and protect `main`.
 - Use off-site backups and routinely test restore.
