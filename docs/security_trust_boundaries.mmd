@@ -1,8 +1,8 @@
 graph TB
     %% Trust boundaries - threat-model-lite (learning)
 
-    subgraph Internet [Trust Boundary: Public Internet]
-        PublicUser((Public User))
+    subgraph Internet [Trust Boundary: Restricted Access]
+        PublicUser((Restricted User))
     end
 
     subgraph DNS_Edge [Trust Boundary: External DNS and TLS Edge]
