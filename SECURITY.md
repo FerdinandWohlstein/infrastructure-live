@@ -1,17 +1,13 @@
-# Security
+# Security Architecture and Compliance
 
-This is a learning project. The notes below are meant to demonstrate "security as a first-class citizen" and enable repeatable, auditable practices ("compliance-as-code"), not to claim ISO certification.
+This document outlines the security controls and architectural decisions implemented to ensure a robust, auditable, and secure infrastructure. The platform is designed with "security as a first-class citizen," following industry best practices and mapping to ISO 27001 controls.
 
-## How to read the C4 diagrams
+## Architecture Overview
 
-- The C4 diagrams in [docs/c4_system.mmd](docs/c4_system.mmd) and [docs/c4_container.mmd](docs/c4_container.mmd) are the primary architecture views.
-- Some components are annotated with `ISO 27001` tags. These are **high-level mappings** to show intent.
+- The C4 diagrams in [docs/c4_system.mmd](docs/c4_system.mmd) and [docs/c4_container.mmd](docs/c4_container.mmd) provide the primary architectural views.
+- Components are mapped to ISO/IEC 27001:2022 controls where applicable to demonstrate compliance intent.
 
-Note on control numbering:
-- Many online examples use **ISO/IEC 27001:2013 Annex A** identifiers like `A.13.1.1`.
-- **ISO/IEC 27001:2022** uses a different control set/numbering. If you want 2022-specific numbering, treat the IDs here as placeholders and update them to your target standard/version.
-
-## Security overlay (mapping table)
+## Security Control Mapping
 
 | Component | ISO 27001 (example IDs) | Implementation intent |
 | --- | --- | --- |

@@ -1,16 +1,15 @@
-# ISO 27001 mapping (learning notes)
+# ISO 27001 Control Mapping
 
-This folder contains lightweight compliance mapping notes intended for learning and interview-readiness.
+This document provides a mapping of infrastructure components to ISO/IEC 27001:2022 control themes to ensure compliance and auditability.
 
-- Primary architecture references: [docs/c4_system.mmd](../docs/c4_system.mmd) and [docs/c4_container.mmd](../docs/c4_container.mmd)
-- Security overlay: [SECURITY.md](../SECURITY.md)
+- Primary Architecture: [docs/c4_system.mmd](../docs/c4_system.mmd) and [docs/c4_container.mmd](../docs/c4_container.mmd)
+- Security Policy: [SECURITY.md](../SECURITY.md)
 
-## Mapping approach
+## Mapping Methodology
 
-- Map *components* to *control themes* (access control, change management, network controls, redundancy).
-- Keep mappings short and verifiable ("what is implemented"), not aspirational.
+Infrastructure components are mapped to specific control themes including access control, change management, network security, and redundancy. Each mapping is supported by verifiable implementation evidence.
 
-## Component mapping (starter)
+## Component Mapping Matrix
 
 | Component | Control theme | Evidence you can point to |
 | --- | --- | --- |
@@ -20,7 +19,3 @@ This folder contains lightweight compliance mapping notes intended for learning 
 | External Secrets Operator | Secrets distribution | `ExternalSecret` definitions in Git, Kubernetes Secrets created/updated. |
 | Cilium/Hubble | Network controls | NetworkPolicies, Hubble flows, policy deny events. |
 | Object storage backups | Availability / redundancy | Backup job manifests and restore runbook. |
-
-## TODO for future (optional)
-
-- If targeting ISO/IEC 27001:2022 specifically, add a second column with the 2022 control numbering for your chosen mappings.

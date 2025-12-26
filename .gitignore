@@ -38,6 +38,7 @@ terraform.rc
 
 # Ansible
 *.retry
+ansible/decrypted_secrets.yaml
 
 # Kubernetes
 # Helm
