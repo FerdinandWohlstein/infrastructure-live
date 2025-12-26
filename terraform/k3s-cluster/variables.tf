@@ -5,25 +5,25 @@ variable "aws_region" {
 }
 
 variable "availability_zone" {
-  description = "AWS availability zone. Note: some accounts may not have all AZ suffixes enabled."
+  description = "AWS availability zone for resource deployment"
   type        = string
   default     = "us-east-1f"
 }
 
 variable "name" {
-  description = "Server name"
+  description = "Infrastructure resource name"
   type        = string
   default     = "k3s-single"
 }
 
 variable "instance_type" {
-  description = "EC2 instance type (budget-friendly default)"
+  description = "EC2 instance type"
   type        = string
   default     = "t3.small"
 }
 
 variable "ami_id" {
-  description = "Optional AMI id override. If null, Ubuntu 24.04 LTS (Canonical) is auto-selected."
+  description = "Optional AMI ID override. If null, Ubuntu 24.04 LTS is auto-selected."
   type        = string
   default     = null
 }
@@ -40,7 +40,7 @@ variable "ssh_public_key" {
 }
 
 variable "admin_cidrs" {
-  description = "Single admin CIDR for SSH/WireGuard access. Example: 203.0.113.10/32"
+  description = "List of administrator CIDR blocks for SSH and WireGuard access"
   type        = list(string)
 }
 

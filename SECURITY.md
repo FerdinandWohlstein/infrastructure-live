@@ -5,7 +5,7 @@ This document outlines the security controls and architectural decisions impleme
 ## Architecture Overview
 
 - The C4 diagrams in [docs/c4_system.mmd](docs/c4_system.mmd) and [docs/c4_container.mmd](docs/c4_container.mmd) provide the primary architectural views.
-- Components are mapped to ISO/IEC 27001:2022 controls where applicable to demonstrate compliance intent.
+- Components are mapped to ISO/IEC 27001:2022 controls where applicable to ensure compliance.
 
 ## Security Control Mapping
 

@@ -4,7 +4,7 @@
     that:
       - wireguard_private_key is defined
       - wireguard_peers is defined
-    fail_msg: "WireGuard secrets are missing! Ensure sops is configured and secrets are decrypted."
+    fail_msg: "WireGuard configuration variables are missing. Ensure the encrypted secrets file is correctly loaded."
 
 - name: Install WireGuard
   apt:
