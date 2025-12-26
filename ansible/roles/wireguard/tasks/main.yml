@@ -1,0 +1,33 @@
+---
+- name: Verify WireGuard secrets are present
+  assert:
+    that:
+      - wireguard_private_key is defined
+      - wireguard_peers is defined
+    fail_msg: "WireGuard secrets are missing! Ensure sops is configured and secrets are decrypted."
+
+- name: Install WireGuard
+  apt:
+    name: wireguard
+    state: present
+
+- name: Enable IP forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Create WireGuard configuration
+  template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/wg0.conf
+    mode: '0600'
+  notify: Restart WireGuard
+
+- name: Ensure WireGuard is started and enabled
+  service:
+    name: wg-quick@wg0
+    state: started
+    enabled: yes

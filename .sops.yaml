@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: ansible/.*\.sops\.ya?ml$
+    kms: "arn:aws:kms:us-east-1:428207760481:key/f7eafd84-0824-4c61-9a23-f6a296b95c6e"

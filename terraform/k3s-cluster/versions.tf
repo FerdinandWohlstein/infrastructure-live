@@ -16,7 +16,7 @@ terraform {
     key            = "k3s-cluster/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
-    kms_key_id     = "alias/terraform_state"
+    kms_key_id     = "alias/terraform-state"
     dynamodb_table = "terraform-locks"
     profile        = "terraform-provisioner"
   }
