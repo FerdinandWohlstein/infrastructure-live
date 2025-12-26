@@ -1,0 +1,46 @@
+---
+- name: Create Vault directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /etc/vault
+    - /etc/vault/tls
+    - /var/lib/vault
+
+- name: Generate self-signed certificate for Vault
+  command: >
+    openssl req -new -newkey rsa:4096 -days 365 -nodes -x509
+    -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=vault"
+    -keyout /etc/vault/tls/vault.key
+    -out /etc/vault/tls/vault.crt
+  args:
+    creates: /etc/vault/tls/vault.crt
+
+- name: Create Vault configuration
+  template:
+    src: vault.hcl.j2
+    dest: /etc/vault/vault.hcl
+    mode: '0644'
+
+- name: Run Vault container
+  docker_container:
+    name: vault
+    image: hashicorp/vault:1.15
+    state: started
+    restart_policy: always
+    network_mode: host
+    capabilities:
+      - IPC_LOCK
+    volumes:
+      - /etc/vault:/vault/config
+      - /etc/vault/tls:/vault/tls
+      - /var/lib/vault:/vault/file
+    env:
+      VAULT_ADDR: "https://127.0.0.1:8200"
+      VAULT_CACERT: "/vault/tls/vault.crt"
+      AWS_ACCESS_KEY_ID: "{{ vault_aws_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ vault_aws_secret_access_key }}"
+      AWS_REGION: "{{ aws_region }}"
+    command: server

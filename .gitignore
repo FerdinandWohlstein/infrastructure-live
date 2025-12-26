@@ -52,4 +52,6 @@ terraform.rc
 *.tmp
 .vscode/
 .idea/
-secrets.md # Bootstrap secrets
+secrets.md
+
+.env

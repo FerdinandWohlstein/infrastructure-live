@@ -1,0 +1,20 @@
+storage "file" {
+  path = "/vault/file"
+}
+
+listener "tcp" {
+  address     = "0.0.0.0:8200"
+  tls_disable = 0
+  tls_cert_file = "/vault/tls/vault.crt"
+  tls_key_file  = "/vault/tls/vault.key"
+}
+
+seal "awskms" {
+  region     = "{{ aws_region }}"
+  kms_key_id = "{{ vault_kms_key_id }}"
+  access_key = "{{ vault_aws_access_key_id }}"
+  secret_key = "{{ vault_aws_secret_access_key }}"
+}
+
+ui = true
+disable_mlock = true

@@ -1,0 +1,12 @@
+[Interface]
+PrivateKey = {{ wireguard_private_key }}
+Address = 10.42.0.6
+ListenPort = 51820
+
+{% for peer in wireguard_peers %}
+[Peer]
+PublicKey = {{ peer.public_key }}
+PresharedKey = {{ peer.preshared_key | default('') }}
+AllowedIPs = {{ peer.allowed_ips }}
+Endpoint = {{ peer.endpoint }}
+{% endfor %}
