@@ -1,0 +1,53 @@
+---
+# K3s prerequisites and cleanup tasks
+
+- name: Verify WireGuard interface is ready
+  ansible.builtin.command: ip link show wg0
+  register: wg0_status
+  changed_when: false
+  failed_when: wg0_status.rc != 0
+
+- name: Check if K3s is already installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s
+  register: k3s_binary
+
+- name: Check if K3s uninstall script exists
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s-uninstall.sh
+  register: k3s_uninstall_script
+
+- name: Uninstall K3s completely (to clear stale configuration)
+  ansible.builtin.shell: /usr/local/bin/k3s-uninstall.sh
+  when:
+    - k3s_uninstall_script.stat.exists
+    - k3s_force_reinstall | default(false)
+  failed_when: false
+  changed_when: true
+
+- name: Clean up stale CNI state
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /var/lib/cni
+    - /etc/cni/net.d
+    - /var/lib/rancher/k3s
+  when: k3s_force_reinstall | default(false)
+
+- name: Check for conflicting cni0 interface
+  ansible.builtin.shell: ip addr show cni0 2>/dev/null | grep -q '10\.42\.0\.1'
+  register: cni0_conflict
+  changed_when: false
+  failed_when: false
+
+- name: Remove conflicting cni0 interface
+  ansible.builtin.command: ip link delete cni0
+  when: cni0_conflict.rc == 0
+  failed_when: false
+  changed_when: true
+
+- name: Remove flannel.1 interface
+  ansible.builtin.command: ip link delete flannel.1
+  failed_when: false
+  changed_when: false

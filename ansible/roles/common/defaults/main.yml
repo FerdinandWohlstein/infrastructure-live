@@ -1,0 +1,24 @@
+---
+# Default variables for common role
+
+# System packages to install
+common_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - ufw
+  - python3-pip
+  - python3-kubernetes
+  - unattended-upgrades
+  - wireguard
+
+# Docker packages
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+
+# WireGuard defaults
+wireguard_listen_port: "51820"

@@ -1,0 +1,17 @@
+---
+# Role metadata for wireguard role
+
+galaxy_info:
+  role_name: wireguard
+  author: Ferdinand Wohlstein
+  description: WireGuard VPN configuration and management
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+
+dependencies:
+  - role: common

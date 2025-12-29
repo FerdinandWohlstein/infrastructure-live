@@ -1,0 +1,11 @@
+---
+# Default variables for wireguard role
+
+# WireGuard interface address
+wireguard_address: "10.42.0.6"
+
+# WireGuard listen port
+wireguard_listen_port: 51820
+
+# WireGuard interface name
+wireguard_interface: wg0

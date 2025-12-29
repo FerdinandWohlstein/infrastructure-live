@@ -1,0 +1,16 @@
+---
+# Role metadata for common role
+
+galaxy_info:
+  role_name: common
+  author: Ferdinand Wohlstein
+  description: Common server configuration including packages, Docker, SSH hardening, firewall, and sysctl settings
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+
+dependencies: []
