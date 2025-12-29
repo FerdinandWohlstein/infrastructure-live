@@ -55,4 +55,5 @@ ansible/decrypted_secrets.yaml
 .idea/
 secrets.md
 
-.envkubernetes/k3s.yaml
+.env
+kubernetes/k3s.yaml
