@@ -25,12 +25,7 @@
     filename: docker
     update_cache: no
 
-- name: Update apt cache
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
-
-- name: Install basic packages
+- name: Install required packages
   apt:
     name:
       - apt-transport-https
@@ -41,7 +36,13 @@
       - ufw
       - python3-pip
       - unattended-upgrades
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - wireguard
     state: present
+    update_cache: yes
+    cache_valid_time: 3600
 
 - name: Configure unattended-upgrades
   copy:
@@ -79,14 +80,6 @@
     - { regexp: '^#?ChallengeResponseAuthentication', line: 'ChallengeResponseAuthentication no' }
   notify: Restart SSH
 
-- name: Install Docker
-  apt:
-    name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-    state: present
-
 - name: Ensure Docker is started and enabled
   service:
     name: docker
@@ -111,7 +104,14 @@
     port: "51820"
     proto: udp
 
-- name: Allow K3s API from WireGuard subnet
+- name: Remove conflicting K3s API deny rule
+  ufw:
+    rule: deny
+    port: "6443"
+    proto: tcp
+    delete: yes
+
+- name: Allow all traffic from WireGuard interface (Trusted)
   ufw:
     rule: allow
     port: "6443"

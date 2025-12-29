@@ -1,4 +1,38 @@
 ---
+- name: Verify WireGuard interface is ready
+  command: ip link show wg0
+  register: wg0_status
+  changed_when: false
+  failed_when: wg0_status.rc != 0
+
+- name: Check if K3s is already installed
+  stat:
+    path: /usr/local/bin/k3s
+  register: k3s_binary
+
+- name: Check if K3s uninstall script exists
+  stat:
+    path: /usr/local/bin/k3s-uninstall.sh
+  register: k3s_uninstall_script
+
+# Full uninstall is only performed if k3s_force_reinstall is set to true
+- name: Uninstall K3s completely (to clear stale configuration)
+  shell: /usr/local/bin/k3s-uninstall.sh
+  when: 
+    - k3s_uninstall_script.stat.exists
+    - k3s_force_reinstall | default(false)
+  failed_when: false
+
+- name: Clean up stale CNI state
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /var/lib/cni
+    - /etc/cni/net.d
+    - /var/lib/rancher/k3s
+  when: k3s_force_reinstall | default(false)
+
 - name: Check for conflicting cni0 interface
   shell: ip addr show cni0 | grep '10.42.0.1'
   register: cni0_conflict
@@ -11,9 +45,11 @@
 
 - name: Install K3s
   shell: |
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --flannel-backend=none --disable-network-policy --write-kubeconfig-mode 644 --cluster-cidr=10.68.0.0/16 --service-cidr=10.69.0.0/16" sh -
-  args:
-    creates: /usr/local/bin/k3s
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server \
+      --tls-san {{ ansible_host }} \
+      --tls-san {{ public_ip | default(ansible_host) }}" sh -
+  register: k3s_install
+  when: not k3s_binary.stat.exists or (k3s_force_reinstall | default(false))
 
 - name: Install Cilium CLI
   shell: |
@@ -52,3 +88,58 @@
     dest: ~/.kube/config
     remote_src: yes
     mode: '0600'
+
+- name: Load ArgoCD secrets
+  set_fact:
+    secrets:
+      repo_url: "{{ repo_url }}"
+      github_token: "{{ github_token }}"
+      github_user: "{{ github_user }}"
+
+- name: Create ArgoCD Namespace
+  kubernetes.core.k8s:
+    name: argocd
+    kind: Namespace
+    state: present
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Create ArgoCD Git Credentials Secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: github-repo-credentials
+        namespace: argocd
+        labels:
+          argocd.argoproj.io/secret-type: repository
+      stringData:
+        type: git
+        url: "{{ secrets.repo_url }}"
+        password: "{{ secrets.github_token }}"
+        username: "{{ secrets.github_user }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Install ArgoCD via Manifest
+  kubernetes.core.k8s:
+    state: present
+    src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    namespace: argocd
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Wait for ArgoCD CRDs to be ready
+  command: k3s kubectl wait --for=condition=established --timeout=60s crd/applications.argoproj.io
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Apply ArgoCD Root Application
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', '/home/ferdinand/services/infrastructure-live/kubernetes/bootstrap/root.yaml') | from_yaml }}"
+    namespace: argocd
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
