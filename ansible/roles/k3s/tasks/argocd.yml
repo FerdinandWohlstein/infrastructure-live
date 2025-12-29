@@ -1,0 +1,69 @@
+---
+# ArgoCD deployment tasks
+
+- name: Verify ArgoCD secrets are present
+  ansible.builtin.assert:
+    that:
+      - repo_url is defined
+      - github_token is defined
+      - github_user is defined
+    fail_msg: "ArgoCD Git credentials are missing. Ensure the encrypted secrets file is correctly loaded."
+
+- name: Create ArgoCD Namespace
+  kubernetes.core.k8s:
+    name: "{{ argocd_namespace }}"
+    kind: Namespace
+    state: present
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Create ArgoCD Git Credentials Secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: github-repo-credentials
+        namespace: "{{ argocd_namespace }}"
+        labels:
+          argocd.argoproj.io/secret-type: repository
+      stringData:
+        type: git
+        url: "{{ repo_url }}"
+        password: "{{ github_token }}"
+        username: "{{ github_user }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  no_log: true
+
+- name: Install ArgoCD via Manifest
+  kubernetes.core.k8s:
+    state: present
+    src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    namespace: "{{ argocd_namespace }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Wait for ArgoCD CRDs to be ready
+  ansible.builtin.command: k3s kubectl wait --for=condition=established --timeout=60s crd/applications.argoproj.io
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
+
+- name: Decrypt and Apply ArgoCD Secrets
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('community.sops.sops', playbook_dir + '/argocd.sops.yaml') | from_yaml_all | list }}"
+    namespace: "{{ argocd_namespace }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  no_log: true
+
+- name: Apply ArgoCD Root Application
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('ansible.builtin.template', playbook_dir + '/../kubernetes/bootstrap/root.yaml') | from_yaml }}"
+    namespace: "{{ argocd_namespace }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml

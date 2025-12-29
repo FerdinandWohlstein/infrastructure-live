@@ -1,0 +1,21 @@
+---
+# Ansible Lint Configuration
+
+profile: production
+
+exclude_paths:
+  - .ansible_cache/
+  - .git/
+
+skip_list:
+  - yaml[line-length]
+  - name[casing]
+
+warn_list:
+  - experimental
+
+enable_list:
+  - no-changed-when
+  - no-handler
+
+use_default_rules: true

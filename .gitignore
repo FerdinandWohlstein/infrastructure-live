@@ -1,59 +1,85 @@
-# Local .terraform directories
+# ===================
+# Terraform
+# ===================
 .terraform/
-
-# .tfstate files
 *.tfstate
 *.tfstate.*
-
-# Crash log files
+.terraform.tfstate.lock.info
 crash.log
 crash.*.log
 
-# Exclude all .tfvars files, which are likely to contain sensitive data, such as
-# password, private keys, and other secrets. These should not be part of version 
-# control as they are data points which are potentially sensitive and subject 
-# to change depending on the environment.
+# Exclude tfvars (may contain secrets)
 *.tfvars
 *.tfvars.json
 
-# Ignore override files as they are usually used to override resources locally and so
-# are not checked in
+# Override files
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
 
-# Ignore transient lock info files created by terraform apply
-.terraform.tfstate.lock.info
-
-# Include override files you do wish to add to version control using negated pattern
-# !example_override.tf
-
-# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
-# example: *tfplan*
-
-# Ignore CLI configuration files
+# CLI configuration
 .terraformrc
 terraform.rc
 
+# ===================
 # Ansible
+# ===================
 *.retry
+.ansible_cache/
 ansible/decrypted_secrets.yaml
 
+# Never commit decrypted secrets
+**/decrypted_*.yaml
+**/decrypted_*.yml
+
+# ===================
 # Kubernetes
+# ===================
+# Kubeconfig with credentials
+kubernetes/k3s.yaml
+
 # Helm
 .helm/
+charts/*.tgz
 
 # Kustomize
 .kustomize/
 
-# General
-.DS_Store
-*.log
-*.tmp
+# ===================
+# SOPS - Decrypted files
+# ===================
+# Decrypted SOPS files should never be committed
+# Encrypted files use .sops.yaml suffix and ARE committed
+*.dec.yaml
+*.dec.yml
+*.decrypted.yaml
+*.decrypted.yml
+
+# ===================
+# IDE / Editor
+# ===================
 .vscode/
 .idea/
-secrets.md
+*.swp
+*.swo
+*~
 
+# ===================
+# OS
+# ===================
+.DS_Store
+Thumbs.db
+
+# ===================
+# General
+# ===================
+*.log
+*.tmp
 .env
-kubernetes/k3s.yaml
+.env.*
+!.env.example
+secrets.md
+terraform/k3s-cluster/.terraform.lock.hcl
+
+docs/learnings/*

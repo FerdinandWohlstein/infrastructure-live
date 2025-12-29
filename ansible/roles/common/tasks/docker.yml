@@ -1,0 +1,8 @@
+---
+# Docker service tasks
+
+- name: Ensure Docker is started and enabled
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true

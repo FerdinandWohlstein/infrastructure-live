@@ -1,14 +1,15 @@
 ---
 - name: Bootstrap Infrastructure
   hosts: all
-  become: yes
+  become: true
   vars:
-    aws_region: us-east-1
-    vault_kms_key_id: "f7eafd84-0824-4c61-9a23-f6a296b95c6e"
+    aws_region: "{{ lookup('env', 'AWS_REGION') | default('us-east-1', true) }}"
+    vault_kms_key_id: "{{ lookup('env', 'VAULT_KMS_KEY_ID') | default('f7eafd84-0824-4c61-9a23-f6a296b95c6e', true) }}"
   pre_tasks:
     - name: Load encrypted credentials
       community.sops.load_vars:
         file: inventory/group_vars/all/secrets.sops.yaml
+      no_log: true
   roles:
     - common
     - wireguard

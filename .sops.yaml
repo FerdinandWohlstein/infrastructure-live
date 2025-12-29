@@ -1,3 +1,16 @@
+---
+# SOPS Configuration
+# https://github.com/getsops/sops#using-sops-yaml-conf-to-select-kms-pgp-for-new-files
+
 creation_rules:
+  # Ansible secrets (inventory, ArgoCD, etc.)
   - path_regex: ansible/.*\.sops\.ya?ml$
+    kms: "arn:aws:kms:us-east-1:428207760481:key/f7eafd84-0824-4c61-9a23-f6a296b95c6e"
+
+  # Kubernetes secrets (if you add them later)
+  - path_regex: kubernetes/.*\.sops\.ya?ml$
+    kms: "arn:aws:kms:us-east-1:428207760481:key/f7eafd84-0824-4c61-9a23-f6a296b95c6e"
+
+  # Terraform secrets (if needed)
+  - path_regex: terraform/.*\.sops\.ya?ml$
     kms: "arn:aws:kms:us-east-1:428207760481:key/f7eafd84-0824-4c61-9a23-f6a296b95c6e"

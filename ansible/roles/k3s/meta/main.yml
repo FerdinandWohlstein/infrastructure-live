@@ -1,0 +1,17 @@
+---
+# Role metadata for k3s role
+
+galaxy_info:
+  role_name: k3s
+  author: Ferdinand Wohlstein
+  description: K3s Kubernetes cluster installation and ArgoCD GitOps deployment
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - focal
+
+dependencies:
+  - role: wireguard

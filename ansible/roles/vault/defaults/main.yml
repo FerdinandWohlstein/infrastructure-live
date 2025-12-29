@@ -1,0 +1,14 @@
+---
+# Default variables for vault role
+
+# Vault version
+vault_version: "1.15"
+
+# Vault directories
+vault_config_dir: /etc/vault
+vault_tls_dir: /etc/vault/tls
+vault_data_dir: /var/lib/vault
+
+# TLS certificate settings
+vault_tls_cert_days: 365
+vault_tls_cert_cn: vault

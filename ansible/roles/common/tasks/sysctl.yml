@@ -1,0 +1,18 @@
+---
+# Kernel sysctl parameter configuration
+
+- name: Disable Reverse Path Filtering (global)
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: '0'
+    state: present
+    reload: true
+  loop:
+    - net.ipv4.conf.all.rp_filter
+    - net.ipv4.conf.default.rp_filter
+
+- name: Remove stale wg0 rp_filter entry from sysctl.conf
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.conf
+    regexp: '^net\.ipv4\.conf\.wg0\.rp_filter'
+    state: absent

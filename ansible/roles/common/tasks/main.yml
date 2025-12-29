@@ -1,124 +1,21 @@
 ---
-- name: Create directory for apt keyrings
-  file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: '0755'
+# Common role - Main tasks entry point
+# Includes all sub-task files in logical order
 
-- name: Download Docker's official GPG key
-  get_url:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    dest: /etc/apt/keyrings/docker.asc
-    mode: '0644'
+- name: Install packages
+  ansible.builtin.include_tasks: packages.yml
 
-- name: Remove conflicting Docker repository entries
-  shell: |
-    sed -i '/download.docker.com/d' /etc/apt/sources.list
-    rm -f /etc/apt/sources.list.d/*docker*.list
-  failed_when: false
-  changed_when: false
+- name: Configure Docker
+  ansible.builtin.include_tasks: docker.yml
 
-- name: Add Docker repository
-  apt_repository:
-    repo: deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
-    state: present
-    filename: docker
-    update_cache: no
+- name: Configure automatic updates
+  ansible.builtin.include_tasks: auto_updates.yml
 
-- name: Install required packages
-  apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg
-      - lsb-release
-      - ufw
-      - python3-pip
-      - unattended-upgrades
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - wireguard
-    state: present
-    update_cache: yes
-    cache_valid_time: 3600
+- name: Harden SSH
+  ansible.builtin.include_tasks: ssh.yml
 
-- name: Configure unattended-upgrades
-  copy:
-    dest: /etc/apt/apt.conf.d/50unattended-upgrades
-    content: |
-      Unattended-Upgrade::Allowed-Origins {
-          "${distro_id}:${distro_codename}";
-          "${distro_id}:${distro_codename}-security";
-          "${distro_id}ESMApps:${distro_codename}-apps-security";
-          "${distro_id}ESM:${distro_codename}-infra-security";
-      };
-      Unattended-Upgrade::Package-Blacklist {
-      };
-      Unattended-Upgrade::Automatic-Reboot "false";
+- name: Configure kernel parameters
+  ansible.builtin.include_tasks: sysctl.yml
 
-- name: Enable periodic updates
-  copy:
-    dest: /etc/apt/apt.conf.d/20auto-upgrades
-    content: |
-      APT::Periodic::Update-Package-Lists "1";
-      APT::Periodic::Download-Upgradeable-Packages "1";
-      APT::Periodic::AutocleanInterval "7";
-      APT::Periodic::Unattended-Upgrade "1";
-
-- name: Harden SSH configuration
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-    validate: 'sshd -t -f %s'
-  loop:
-    - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no' }
-    - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
-    - { regexp: '^#?ChallengeResponseAuthentication', line: 'ChallengeResponseAuthentication no' }
-  notify: Restart SSH
-
-- name: Ensure Docker is started and enabled
-  service:
-    name: docker
-    state: started
-    enabled: yes
-
-- name: Configure UFW
-  ufw:
-    rule: allow
-    port: "{{ item }}"
-    proto: tcp
-  loop:
-    - "22"
-    - "80"
-    - "443"
-    # 6443 (K3s API) is restricted to WireGuard interface below
-    # 51820 (WireGuard UDP) is handled below
-
-- name: Allow WireGuard UDP
-  ufw:
-    rule: allow
-    port: "51820"
-    proto: udp
-
-- name: Remove conflicting K3s API deny rule
-  ufw:
-    rule: deny
-    port: "6443"
-    proto: tcp
-    delete: yes
-
-- name: Allow all traffic from WireGuard interface (Trusted)
-  ufw:
-    rule: allow
-    port: "6443"
-    proto: tcp
-    src: "10.42.0.0/24"
-
-- name: Enable UFW
-  ufw:
-    state: enabled
-    policy: deny
+- name: Configure firewall
+  ansible.builtin.include_tasks: firewall.yml
