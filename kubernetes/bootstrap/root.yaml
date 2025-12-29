@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: {{ repo_url }}
-    targetRevision: kubernetes-test
+    targetRevision: kubernetes-tests
     path: kubernetes/apps
     directory:
       recurse: true
