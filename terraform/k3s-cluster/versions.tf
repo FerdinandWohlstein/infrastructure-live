@@ -10,7 +10,7 @@ terraform {
       source  = "carlpett/sops"
       version = "~> 1.3.0"
     }
-  }  
+  }
     backend "s3" {
     bucket         = "infrastructure-live-terraform-state-43287"
     key            = "k3s-cluster/terraform.tfstate"

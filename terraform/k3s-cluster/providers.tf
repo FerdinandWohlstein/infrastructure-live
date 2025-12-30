@@ -4,7 +4,7 @@ provider "aws" {
 
   assume_role {
     role_arn     = "arn:aws:iam::428207760481:role/TerraformProvisionerRole"
-    
+
     session_name = "TerraformClusterDeployment"
   }
     default_tags {
