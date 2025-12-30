@@ -1,0 +1,45 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+        exclude: ^kubernetes/.*sops\.yaml$ # Skip encrypted files
+      - id: check-added-large-files
+
+  # 1. Ansible Linting
+  - repo: local
+    hooks:
+      - id: ansible-lint
+        name: Ansible-lint
+        entry: ansible-lint
+        language: system
+        files: \.(yaml|yml)$
+        exclude: ^kubernetes/|.*\.sops\.yaml$
+
+  # 2. Kubernetes Linting (Mirroring your CI)
+  - repo: https://github.com/stackrox/kube-linter
+    rev: v0.8.2
+    hooks:
+      - id: kube-linter
+        args: ["kubernetes/", "--config", ".kube-linter.yaml"]
+        exclude: .*\.sops\.yaml$
+
+  # 3. Security Scanning (IaC)
+  - repo: local
+    hooks:
+      - id: trivy
+        name: Trivy Config Scan
+        entry: trivy config kubernetes/
+        language: system
+        pass_filenames: false
+        files: ^kubernetes/.*\.yaml$
+
+  # 4. Secret Detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        exclude: .*\.sops\.yaml$ # Ignore SOPS-encrypted files

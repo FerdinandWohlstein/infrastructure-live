@@ -1,0 +1,23 @@
+---
+# .ansible-lint config
+profile: basic # min, basic, moderate, safety, shared, production
+
+# List of ignore rules
+# skip_list:
+#   - yaml[line-length]
+
+# Exclude paths
+exclude_paths:
+  - ".github/"
+  - "kubernetes/"
+  - "terraform/"
+  - "**/*.sops.yaml"
+
+# Enable experimental rules
+enable_list:
+  - empty-string-compare
+  - no-relative-paths
+
+# Rules requiring opt-in
+# opt_in_rules:
+#   - name-prefix
