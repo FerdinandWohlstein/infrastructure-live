@@ -10,60 +10,60 @@
     fail_msg: "ArgoCD Git credentials are missing. Ensure the encrypted secrets file is correctly loaded."
 
 - name: Create ArgoCD Namespace
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   kubernetes.core.k8s:
-    name: "{{ argocd_namespace }}"
     kind: Namespace
+    name: "{{ argocd_namespace }}"
     state: present
+
+- name: Install ArgoCD via Manifest
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  kubernetes.core.k8s:
+    namespace: "{{ argocd_namespace }}"
+    src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    state: present
+
+- name: Wait for ArgoCD CRDs to be ready
+  ansible.builtin.command: k3s kubectl wait --for=condition=established --timeout=60s crd/applications.argoproj.io
+  changed_when: false
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
 - name: Create ArgoCD Git Credentials Secret
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   kubernetes.core.k8s:
-    state: present
     definition:
       apiVersion: v1
       kind: Secret
       metadata:
-        name: github-repo-credentials
-        namespace: "{{ argocd_namespace }}"
         labels:
           argocd.argoproj.io/secret-type: repository
+        name: github-repo-credentials
+        namespace: "{{ argocd_namespace }}"
       stringData:
+        password: "{{ github_token }}"
         type: git
         url: "{{ repo_url }}"
-        password: "{{ github_token }}"
         username: "{{ github_user }}"
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    state: present
   no_log: true
 
-- name: Install ArgoCD via Manifest
-  kubernetes.core.k8s:
-    state: present
-    src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-    namespace: "{{ argocd_namespace }}"
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-
-- name: Wait for ArgoCD CRDs to be ready
-  ansible.builtin.command: k3s kubectl wait --for=condition=established --timeout=60s crd/applications.argoproj.io
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-  changed_when: false
-
 - name: Decrypt and Apply ArgoCD Secrets
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   kubernetes.core.k8s:
-    state: present
     definition: "{{ lookup('community.sops.sops', playbook_dir + '/argocd.sops.yaml') | from_yaml_all | list }}"
     namespace: "{{ argocd_namespace }}"
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+    state: present
   no_log: true
 
 - name: Apply ArgoCD Root Application
-  kubernetes.core.k8s:
-    state: present
-    definition: "{{ lookup('ansible.builtin.template', playbook_dir + '/../kubernetes/bootstrap/root.yaml') | from_yaml }}"
-    namespace: "{{ argocd_namespace }}"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  kubernetes.core.k8s:
+    definition: "{{ lookup('ansible.builtin.template', playbook_dir + '/../kubernetes/bootstrap/root.yaml') | from_yaml }}"
+    namespace: "{{ argocd_namespace }}"
+    state: present

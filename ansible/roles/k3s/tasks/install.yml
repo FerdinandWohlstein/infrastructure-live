@@ -14,25 +14,25 @@
 
 - name: Ensure K3s service is started
   ansible.builtin.systemd:
+    enabled: true
     name: k3s
     state: started
-    enabled: true
+  delay: 5
   register: k3s_start
   retries: 3
-  delay: 5
   until: k3s_start is succeeded
 
 - name: Wait for K3s API to be ready
   ansible.builtin.wait_for:
-    port: 6443
-    host: 127.0.0.1
     delay: 5
+    host: 127.0.0.1
+    port: 6443
     timeout: 120
 
 - name: Wait for K3s to be ready
   ansible.builtin.command: k3s kubectl get nodes
-  register: nodes
-  until: nodes.rc == 0
-  retries: 10
-  delay: 5
   changed_when: false
+  delay: 5
+  register: nodes
+  retries: 10
+  until: nodes.rc == 0

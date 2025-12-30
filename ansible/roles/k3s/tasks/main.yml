@@ -4,11 +4,11 @@
 - name: K3s Prerequisites
   ansible.builtin.include_tasks: prerequisites.yml
 
-- name: Configure K3s
-  ansible.builtin.include_tasks: configure.yml
-
 - name: Install K3s
   ansible.builtin.include_tasks: install.yml
+
+- name: Configure K3s
+  ansible.builtin.include_tasks: configure.yml
 
 - name: Setup Kubeconfig
   ansible.builtin.include_tasks: kubeconfig.yml
