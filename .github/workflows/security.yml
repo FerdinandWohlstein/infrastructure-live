@@ -77,28 +77,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create kube-linter config
-        run: |
-          cat <<EOF > .kube-linter.yaml
-          checks:
-            # Enable additional security checks
-            addAllBuiltIn: true
-            exclude:
-              # Exclude checks that may be too noisy for initial setup
-              - "unset-cpu-requirements"
-              - "unset-memory-requirements"
-          EOF
-
       - name: Run Kube-Linter on Kubernetes manifests
+        id: kube-linter
         uses: stackrox/kube-linter-action@v1
         with:
           directory: kubernetes
           config: .kube-linter.yaml
           format: sarif
           output-file: kube-linter-results.sarif
-        continue-on-error: true # Don't fail build on lint errors
+        continue-on-error: true
 
       - name: Display Kube-Linter results (human-readable)
+        if: always()
         run: |
           echo "::group::Kube-Linter Results"
           docker run --rm -v $(pwd):/src stackrox/kube-linter lint /src/kubernetes --config /src/.kube-linter.yaml || true
@@ -110,6 +100,12 @@ jobs:
         with:
           sarif_file: kube-linter-results.sarif
           category: 'kube-linter'
+
+      - name: Fail if Kube-Linter found issues
+        if: always() && steps.kube-linter.outcome == 'failure'
+        run: |
+          echo "::error::Kube-Linter found linting issues. Please check the 'Kube-Linter Results' group above or the Security tab."
+          exit 1
 
   security-summary:
     name: Security Summary
