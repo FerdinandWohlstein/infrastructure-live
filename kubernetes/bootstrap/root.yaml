@@ -8,8 +8,8 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: {{ repo_url }}
-    targetRevision: kubernetes-tests
+    repoURL: "{{ repo_url }}"
+    targetRevision: main
     path: kubernetes/apps
     directory:
       recurse: true
