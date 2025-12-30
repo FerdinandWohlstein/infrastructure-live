@@ -22,7 +22,7 @@
 - name: Allow WireGuard UDP Tunnel
   community.general.ufw:
     rule: allow
-    port: "{{ wireguard_listen_port }}"
+    port: "{{ common_wireguard_listen_port }}"
     proto: udp
 
 - name: Remove conflicting K3s API deny rule

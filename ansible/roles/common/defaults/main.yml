@@ -15,10 +15,10 @@ common_packages:
   - wireguard
 
 # Docker packages
-docker_packages:
+common_docker_packages:
   - docker-ce
   - docker-ce-cli
   - containerd.io
 
 # WireGuard defaults
-wireguard_listen_port: "51820"
+common_wireguard_listen_port: "51820"
