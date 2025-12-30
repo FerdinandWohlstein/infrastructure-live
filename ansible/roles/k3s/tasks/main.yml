@@ -1,54 +1,18 @@
 ---
-- name: Check for conflicting cni0 interface
-  shell: ip addr show cni0 | grep '10.42.0.1'
-  register: cni0_conflict
-  ignore_errors: yes
-  changed_when: false
+# K3s role - Main tasks entry point
 
-- name: Remove conflicting cni0 interface
-  command: ip link delete cni0
-  when: cni0_conflict.rc == 0
+- name: K3s Prerequisites
+  ansible.builtin.include_tasks: prerequisites.yml
 
 - name: Install K3s
-  shell: |
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --flannel-backend=none --disable-network-policy --write-kubeconfig-mode 644 --cluster-cidr=10.68.0.0/16 --service-cidr=10.69.0.0/16" sh -
-  args:
-    creates: /usr/local/bin/k3s
+  ansible.builtin.include_tasks: install.yml
 
-- name: Install Cilium CLI
-  shell: |
-    curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/v0.15.0/cilium-linux-amd64.tar.gz
-    tar xzvfC cilium-linux-amd64.tar.gz /usr/local/bin
-    rm cilium-linux-amd64.tar.gz
-  args:
-    creates: /usr/local/bin/cilium
+- name: Configure K3s
+  ansible.builtin.include_tasks: configure.yml
 
-- name: Install Cilium
-  command: cilium install
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-  register: cilium_install
-  changed_when: "'Cilium was successfully installed' in cilium_install.stdout"
-  failed_when: 
-    - cilium_install.rc != 0
-    - "'already installed' not in cilium_install.stderr"
+- name: Setup Kubeconfig
+  ansible.builtin.include_tasks: kubeconfig.yml
 
-- name: Wait for K3s to be ready
-  command: k3s kubectl get nodes
-  register: nodes
-  until: nodes.rc == 0
-  retries: 10
-  delay: 5
-
-- name: Create kube directory
-  file:
-    path: ~/.kube
-    state: directory
-    mode: '0700'
-
-- name: Copy kubeconfig
-  copy:
-    src: /etc/rancher/k3s/k3s.yaml
-    dest: ~/.kube/config
-    remote_src: yes
-    mode: '0600'
+- name: Deploy ArgoCD
+  ansible.builtin.include_tasks: argocd.yml
+  tags: [argocd, k3s_argocd]

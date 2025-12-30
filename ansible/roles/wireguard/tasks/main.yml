@@ -1,33 +1,36 @@
 ---
 - name: Verify WireGuard secrets are present
-  assert:
+  ansible.builtin.assert:
     that:
       - wireguard_private_key is defined
       - wireguard_peers is defined
     fail_msg: "WireGuard configuration variables are missing. Ensure the encrypted secrets file is correctly loaded."
 
-- name: Install WireGuard
-  apt:
-    name: wireguard
-    state: present
-
 - name: Enable IP forwarding
-  sysctl:
+  ansible.posix.sysctl:
     name: net.ipv4.ip_forward
     value: '1'
-    sysctl_set: yes
+    sysctl_set: true
     state: present
-    reload: yes
+    reload: true
 
 - name: Create WireGuard configuration
-  template:
+  ansible.builtin.template:
     src: wg0.conf.j2
-    dest: /etc/wireguard/wg0.conf
+    dest: /etc/wireguard/{{ wireguard_interface }}.conf
     mode: '0600'
+  no_log: true
   notify: Restart WireGuard
 
 - name: Ensure WireGuard is started and enabled
-  service:
-    name: wg-quick@wg0
+  ansible.builtin.service:
+    name: wg-quick@{{ wireguard_interface }}
     state: started
-    enabled: yes
+    enabled: true
+
+- name: Disable Reverse Path Filtering for WireGuard interface
+  ansible.posix.sysctl:
+    name: net.ipv4.conf.{{ wireguard_interface }}.rp_filter
+    value: '0'
+    state: present
+    reload: true

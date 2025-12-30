@@ -1,0 +1,128 @@
+name: Security Scan
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'kubernetes/**'
+      - 'ansible/**/*.yaml'
+      - 'ansible/**/*.yml'
+      - '.github/workflows/security.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'kubernetes/**'
+      - 'ansible/**/*.yaml'
+      - 'ansible/**/*.yml'
+      - '.github/workflows/security.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  trivy-scan:
+    name: Trivy Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner (Kubernetes)
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: 'config'
+          scan-ref: './kubernetes'
+          format: 'table'
+          exit-code: '0' # Don't fail the build, just report
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Run Trivy and upload SARIF (Kubernetes)
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: 'config'
+          scan-ref: './kubernetes'
+          format: 'sarif'
+          output: 'trivy-k8s-results.sarif'
+          exit-code: '0'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Upload Trivy Kubernetes SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: 'trivy-k8s-results.sarif'
+          category: 'trivy-kubernetes'
+
+      - name: Run Trivy on Ansible configs (IaC scan)
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: 'config'
+          scan-ref: './ansible'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH,MEDIUM'
+        continue-on-error: true # Ansible files may have false positives
+
+  kube-linter-scan:
+    name: Kube-Linter Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Kube-Linter on Kubernetes manifests
+        id: kube-linter
+        uses: stackrox/kube-linter-action@v1
+        with:
+          directory: kubernetes
+          config: .kube-linter.yaml
+          format: sarif
+          output-file: kube-linter-results.sarif
+        continue-on-error: true
+
+      - name: Display Kube-Linter results (human-readable)
+        if: always()
+        run: |
+          echo "::group::Kube-Linter Results"
+          docker run --rm -v $(pwd):/src stackrox/kube-linter lint /src/kubernetes --config /src/.kube-linter.yaml || true
+          echo "::endgroup::"
+
+      - name: Upload Kube-Linter SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: kube-linter-results.sarif
+          category: 'kube-linter'
+
+      - name: Fail if Kube-Linter found issues
+        if: always() && steps.kube-linter.outcome == 'failure'
+        run: |
+          echo "::error::Kube-Linter found linting issues. Please check the 'Kube-Linter Results' group above or the Security tab."
+          exit 1
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [trivy-scan, kube-linter-scan]
+    if: always()
+    steps:
+      - name: Security scan summary
+        run: |
+          echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Scanner | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Trivy | ${{ needs.trivy-scan.result == 'success' && '✅ Passed' || '⚠️ Issues Found' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Kube-Linter | ${{ needs.kube-linter-scan.result == 'success' && '✅ Passed' || '⚠️ Issues Found' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "- Check the **Security** tab in GitHub for detailed findings" >> $GITHUB_STEP_SUMMARY
+          echo "- Review the job logs above for human-readable output" >> $GITHUB_STEP_SUMMARY
+          echo "- Address CRITICAL and HIGH severity issues first" >> $GITHUB_STEP_SUMMARY

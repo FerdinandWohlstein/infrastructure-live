@@ -1,0 +1,35 @@
+---
+- name: Rotate K3s Certificates
+  hosts: k3s_server
+  become: true
+  tasks:
+    - name: Stop K3s service
+      ansible.builtin.systemd:
+        name: k3s
+        state: stopped
+
+    - name: Start K3s service
+      ansible.builtin.systemd:
+        name: k3s
+        state: started
+
+    - name: Wait for K3s API to be ready
+      ansible.builtin.wait_for:
+        port: 6443
+        host: 127.0.0.1
+        delay: 5
+        timeout: 60
+
+    - name: Fetch new kubeconfig
+      ansible.builtin.fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: "{{ playbook_dir }}/../kubernetes/k3s.yaml"
+        flat: true
+
+    - name: Update server address in local kubeconfig
+      delegate_to: localhost
+      become: false
+      ansible.builtin.replace:
+        path: "{{ playbook_dir }}/../kubernetes/k3s.yaml"
+        regexp: 'https://127.0.0.1:6443'
+        replace: 'https://{{ k3s_advertise_address | default("10.42.0.6") }}:6443'

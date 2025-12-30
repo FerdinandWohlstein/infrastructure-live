@@ -1,42 +1,55 @@
 ---
+- name: Verify Vault AWS credentials are present
+  ansible.builtin.assert:
+    that:
+      - vault_aws_access_key_id is defined
+      - vault_aws_secret_access_key is defined
+      - vault_kms_key_id is defined
+    fail_msg: "Vault AWS credentials are missing. Ensure the encrypted secrets file is correctly loaded."
+
 - name: Create Vault directories
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: '0755'
   loop:
-    - /etc/vault
-    - /etc/vault/tls
-    - /var/lib/vault
+    - "{{ vault_config_dir }}"
+    - "{{ vault_tls_dir }}"
+    - "{{ vault_data_dir }}"
 
 - name: Generate self-signed certificate for Vault
-  command: >
-    openssl req -new -newkey rsa:4096 -days 365 -nodes -x509
-    -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=vault"
-    -keyout /etc/vault/tls/vault.key
-    -out /etc/vault/tls/vault.crt
+  ansible.builtin.command: >
+    openssl req -new -newkey rsa:4096 -days {{ vault_tls_cert_days }} -nodes -x509
+    -subj "/C=US/ST=State/L=City/O=Org/CN={{ vault_tls_cert_cn }}"
+    -keyout {{ vault_tls_dir }}/vault.key
+    -out {{ vault_tls_dir }}/vault.crt
   args:
-    creates: /etc/vault/tls/vault.crt
+    creates: "{{ vault_tls_dir }}/vault.crt"
+
+- name: Set permissions on Vault TLS key
+  ansible.builtin.file:
+    path: "{{ vault_tls_dir }}/vault.key"
+    mode: '0600'
 
 - name: Create Vault configuration
-  template:
+  ansible.builtin.template:
     src: vault.hcl.j2
-    dest: /etc/vault/vault.hcl
+    dest: "{{ vault_config_dir }}/vault.hcl"
     mode: '0644'
 
 - name: Run Vault container
-  docker_container:
+  community.docker.docker_container:
     name: vault
-    image: hashicorp/vault:1.15
+    image: "hashicorp/vault:{{ vault_version }}"
     state: started
     restart_policy: always
     network_mode: host
     capabilities:
       - IPC_LOCK
     volumes:
-      - /etc/vault:/vault/config
-      - /etc/vault/tls:/vault/tls
-      - /var/lib/vault:/vault/file
+      - "{{ vault_config_dir }}:/vault/config"
+      - "{{ vault_tls_dir }}:/vault/tls"
+      - "{{ vault_data_dir }}:/vault/file"
     env:
       VAULT_ADDR: "https://127.0.0.1:8200"
       VAULT_CACERT: "/vault/tls/vault.crt"
@@ -44,3 +57,4 @@
       AWS_SECRET_ACCESS_KEY: "{{ vault_aws_secret_access_key }}"
       AWS_REGION: "{{ aws_region }}"
     command: server
+  no_log: true

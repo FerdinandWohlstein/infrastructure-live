@@ -1,0 +1,38 @@
+---
+# K3s installation tasks
+
+- name: Install K3s
+  ansible.builtin.shell: |
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server \
+      --tls-san {{ ansible_host }} \
+      --tls-san {{ public_ip | default(ansible_host) }} \
+      --tls-san {{ k3s_advertise_address | default(ansible_default_ipv4.address) }}" sh -
+  args:
+    creates: /usr/local/bin/k3s
+  register: k3s_install
+  when: not k3s_binary.stat.exists or k3s_force_reinstall
+
+- name: Ensure K3s service is started
+  ansible.builtin.systemd:
+    enabled: true
+    name: k3s
+    state: started
+  delay: 5
+  register: k3s_start
+  retries: 3
+  until: k3s_start is succeeded
+
+- name: Wait for K3s API to be ready
+  ansible.builtin.wait_for:
+    delay: 5
+    host: 127.0.0.1
+    port: 6443
+    timeout: 120
+
+- name: Wait for K3s to be ready
+  ansible.builtin.command: k3s kubectl get nodes
+  changed_when: false
+  delay: 5
+  register: nodes
+  retries: 10
+  until: nodes.rc == 0
