@@ -3,20 +3,18 @@
 
 - name: Create K3s configuration directory
   ansible.builtin.file:
+    mode: '0755'
     path: /etc/rancher/k3s
     state: directory
-    mode: '0755'
 
 - name: Configure K3s networking
   ansible.builtin.copy:
-    dest: /etc/rancher/k3s/config.yaml
     content: |
-      bind-address: {{ k3s_bind_address }}
       advertise-address: {{ k3s_advertise_address | default(ansible_default_ipv4.address) }}
-      node-ip: {{ k3s_node_ip | default(ansible_default_ipv4.address) }}
-      disable-network-policy: {{ k3s_disable_network_policy | lower }}
-      write-kubeconfig-mode: "{{ k3s_write_kubeconfig_mode }}"
+      bind-address: {{ k3s_bind_address }}
       cluster-cidr: "{{ k3s_cluster_cidr }}"
+      disable-network-policy: {{ k3s_disable_network_policy | lower }}
+      node-ip: {{ k3s_node_ip | default(ansible_default_ipv4.address) }}
       service-cidr: "{{ k3s_service_cidr }}"
       tls-san:
         - "{{ ansible_host }}"
@@ -25,6 +23,8 @@
         {% if public_ip is defined %}
         - "{{ public_ip }}"
         {% endif %}
+      write-kubeconfig-mode: "{{ k3s_write_kubeconfig_mode }}"
+    dest: /etc/rancher/k3s/config.yaml
     mode: '0644'
   register: k3s_config
 
