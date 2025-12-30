@@ -42,7 +42,7 @@ jobs:
           severity: 'CRITICAL,HIGH,MEDIUM'
 
       - name: Run Trivy and upload SARIF (Kubernetes)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@release/v0.68
         with:
           scan-type: 'config'
           scan-ref: './kubernetes'
