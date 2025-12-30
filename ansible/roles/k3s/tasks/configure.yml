@@ -26,4 +26,10 @@
         - "{{ public_ip }}"
         {% endif %}
     mode: '0644'
-  notify: Restart K3s
+  register: k3s_config
+
+- name: Restart K3s
+  ansible.builtin.service:
+    name: k3s
+    state: restarted
+  when: k3s_config.changed

@@ -37,7 +37,7 @@
   community.general.ufw:
     rule: allow
     direction: in
-    interface: wg0
+    interface: "{{ wireguard_interface }}"
 
 # Kubernetes cluster networking - Allow pod and service networks
 - name: Allow traffic from pod network (cluster-cidr)
