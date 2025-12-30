@@ -2,7 +2,7 @@
 # K3s prerequisites and cleanup tasks
 
 - name: Verify WireGuard interface is ready
-  ansible.builtin.command: ip link show wg0
+  ansible.builtin.command: "ip link show {{ wireguard_interface | default('wg0') }}"
   register: wg0_status
   changed_when: false
   failed_when: wg0_status.rc != 0
@@ -49,5 +49,6 @@
 
 - name: Remove flannel.1 interface
   ansible.builtin.command: ip link delete flannel.1
+  register: flannel_remove
   failed_when: false
-  changed_when: false
+  changed_when: flannel_remove.rc == 0

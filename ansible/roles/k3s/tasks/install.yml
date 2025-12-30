@@ -6,7 +6,7 @@
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server \
       --tls-san {{ ansible_host }} \
       --tls-san {{ public_ip | default(ansible_host) }} \
-      --tls-san {{ k3s_advertise_address }}" sh -
+      --tls-san {{ k3s_advertise_address | default(ansible_default_ipv4.address) }}" sh -
   args:
     creates: /usr/local/bin/k3s
   register: k3s_install
