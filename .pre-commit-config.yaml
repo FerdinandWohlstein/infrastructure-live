@@ -43,3 +43,12 @@ repos:
     hooks:
       - id: detect-secrets
         exclude: .*\.sops\.yaml$ # Ignore SOPS-encrypted files
+
+  # 5. Terraform
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.96.1
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate
+        args:
+          - --args=-backend=false
