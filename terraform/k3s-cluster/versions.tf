@@ -11,7 +11,7 @@ terraform {
       version = "~> 1.3.0"
     }
   }
-    backend "s3" {
+  backend "s3" {
     bucket         = "infrastructure-live-terraform-state-43287"
     key            = "k3s-cluster/terraform.tfstate"
     region         = "us-east-1"
