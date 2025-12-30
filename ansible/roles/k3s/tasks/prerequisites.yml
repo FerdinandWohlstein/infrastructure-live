@@ -2,15 +2,10 @@
 # K3s prerequisites and cleanup tasks
 
 - name: Verify WireGuard interface is ready
-<<<<<<< HEAD
   ansible.builtin.command: "ip link show {{ wireguard_interface | default('wg0') }}"
-  register: wg0_status
-=======
-  ansible.builtin.command: ip link show wg0
->>>>>>> 41556fb (Refactor K3s installation order and enhance ArgoCD deployment with explicit kubeconfig.)
+  register: k3s_wg0_status
   changed_when: false
-  failed_when: wg0_status.rc != 0
-  register: wg0_status
+  failed_when: k3s_wg0_status.rc != 0
 
 - name: Check if K3s is already installed
   ansible.builtin.stat:
@@ -23,7 +18,7 @@
   register: k3s_uninstall_script
 
 - name: Uninstall K3s completely (to clear stale configuration)
-  ansible.builtin.shell: /usr/local/bin/k3s-uninstall.sh
+  ansible.builtin.command: /usr/local/bin/k3s-uninstall.sh
   changed_when: true
   failed_when: false
   when:
@@ -41,24 +36,23 @@
   when: k3s_force_reinstall | default(false)
 
 - name: Check for conflicting cni0 interface
-  ansible.builtin.shell: ip addr show cni0 2>/dev/null | grep -q '10\.42\.0\.1'
+  ansible.builtin.shell: |
+    set -o pipefail
+    ip addr show cni0 2>/dev/null | grep -q '10\.42\.0\.1'
+  args:
+    executable: /bin/bash
   changed_when: false
   failed_when: false
-  register: cni0_conflict
+  register: k3s_cni0_conflict
 
 - name: Remove conflicting cni0 interface
   ansible.builtin.command: ip link delete cni0
   changed_when: true
   failed_when: false
-  when: cni0_conflict.rc == 0
+  when: k3s_cni0_conflict.rc == 0
 
 - name: Remove flannel.1 interface
   ansible.builtin.command: ip link delete flannel.1
-<<<<<<< HEAD
-  register: flannel_remove
+  register: k3s_flannel_remove
   failed_when: false
-  changed_when: flannel_remove.rc == 0
-=======
-  changed_when: false
-  failed_when: false
->>>>>>> 41556fb (Refactor K3s installation order and enhance ArgoCD deployment with explicit kubeconfig.)
+  changed_when: k3s_flannel_remove.rc == 0

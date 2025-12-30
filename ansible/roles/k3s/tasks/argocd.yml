@@ -14,14 +14,14 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   kubernetes.core.k8s:
     kind: Namespace
-    name: "{{ argocd_namespace }}"
+    name: "{{ k3s_argocd_namespace }}"
     state: present
 
 - name: Install ArgoCD via Manifest
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   kubernetes.core.k8s:
-    namespace: "{{ argocd_namespace }}"
+    namespace: "{{ k3s_argocd_namespace }}"
     src: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
     state: present
 
@@ -42,7 +42,7 @@
         labels:
           argocd.argoproj.io/secret-type: repository
         name: github-repo-credentials
-        namespace: "{{ argocd_namespace }}"
+        namespace: "{{ k3s_argocd_namespace }}"
       stringData:
         password: "{{ github_token }}"
         type: git
@@ -56,7 +56,7 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   kubernetes.core.k8s:
     definition: "{{ lookup('community.sops.sops', playbook_dir + '/argocd.sops.yaml') | from_yaml_all | list }}"
-    namespace: "{{ argocd_namespace }}"
+    namespace: "{{ k3s_argocd_namespace }}"
     state: present
   no_log: true
 
@@ -65,5 +65,5 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   kubernetes.core.k8s:
     definition: "{{ lookup('ansible.builtin.template', playbook_dir + '/../kubernetes/bootstrap/root.yaml') | from_yaml }}"
-    namespace: "{{ argocd_namespace }}"
+    namespace: "{{ k3s_argocd_namespace }}"
     state: present

@@ -13,4 +13,4 @@ k3s_disable_network_policy: true
 k3s_write_kubeconfig_mode: "644"
 
 # ArgoCD
-argocd_namespace: argocd
+k3s_argocd_namespace: argocd
