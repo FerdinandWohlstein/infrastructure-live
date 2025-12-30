@@ -1,21 +1,21 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: root-app
-  namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
+  name: root-app
+  namespace: argocd
 spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: "{{ repo_url }}"
-    targetRevision: main
-    path: kubernetes/apps
     directory:
       recurse: true
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: argocd
+    path: kubernetes/apps
+    repoURL: "{{ repo_url }}"
+    targetRevision: main
   syncPolicy:
     automated:
       prune: true
