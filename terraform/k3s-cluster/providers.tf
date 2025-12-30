@@ -1,16 +1,16 @@
 provider "aws" {
-  region = var.aws_region
-  profile = "elite-devops"
+  region  = var.aws_region
+  profile = var.aws_profile
 
   assume_role {
-    role_arn     = "arn:aws:iam::428207760481:role/TerraformProvisionerRole"
-
+    role_arn     = var.terraform_role_arn
     session_name = "TerraformClusterDeployment"
   }
-    default_tags {
+
+  default_tags {
     tags = {
       ManagedBy   = "Terraform"
-      Project     = "k3s-cluster"
+      Project     = var.project
       Environment = var.environment
     }
   }

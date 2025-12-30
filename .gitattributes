@@ -1,0 +1,39 @@
+# ===================
+# SOPS Encrypted Files
+# ===================
+# Use textconv for better diffs on encrypted files
+*.sops.yaml diff=sopsdiffer
+*.sops.yml diff=sopsdiffer
+
+# Prevent merge conflicts on encrypted files (force manual resolution)
+*.sops.yaml merge=binary
+*.sops.yml merge=binary
+
+# ===================
+# Terraform Lock Files
+# ===================
+# Treat lock files as generated
+.terraform.lock.hcl linguist-generated=true
+
+# ===================
+# Line Endings
+# ===================
+# Ensure consistent line endings across platforms
+* text=auto eol=lf
+
+# Shell scripts must use LF
+*.sh text eol=lf
+
+# Windows batch files need CRLF
+*.bat text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

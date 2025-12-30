@@ -4,6 +4,18 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "aws_profile" {
+  description = "AWS CLI profile to use for authentication"
+  type        = string
+  default     = "elite-devops"
+}
+
+variable "terraform_role_arn" {
+  description = "IAM Role ARN for Terraform to assume (enables cross-account and least-privilege access)"
+  type        = string
+  sensitive   = true
+}
+
 variable "availability_zone" {
   description = "AWS availability zone for resource deployment"
   type        = string
