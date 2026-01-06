@@ -11,7 +11,7 @@ Infrastructure components are mapped to specific control themes including access
 
 ## Component Mapping Matrix
 
-| Component | Control theme | Evidence you can point to |
+| Component | Control theme | Evidence |
 | --- | --- | --- |
 | WireGuard | Administrative access control | Firewall rules + no public API exposure + WG peer config. |
 | Argo CD | Change management / audit trail | Git history, PR reviews, Argo sync status. |
