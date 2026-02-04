@@ -15,10 +15,12 @@ spec:
     helm:
       releaseName: loki
       values: |
-        # Single binary mode for small clusters
         deploymentMode: SingleBinary
         singleBinary:
           replicas: 1
+          persistence:
+            enabled: true
+            size: 10Gi
         loki:
           auth_enabled: false
           commonConfig:
@@ -50,4 +52,4 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
+    - ServerSideApply=true

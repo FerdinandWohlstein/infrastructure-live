@@ -3,22 +3,21 @@ kind: Application
 metadata:
   finalizers:
   - resources-finalizer.argocd.argoproj.io
-  name: tempo
+  name: blocky
   namespace: argocd
 spec:
   destination:
-    namespace: observability
+    namespace: blocky
     server: https://kubernetes.default.svc
   project: default
   source:
-    chart: tempo
+    chart: blocky
     helm:
-      releaseName: tempo
-      values: |
-        tempo:
-          retention: 24h
-    repoURL: https://grafana.github.io/helm-charts
-    targetRevision: "1.24.4"
+      releaseName: blocky
+      valueFiles:
+      - values.yaml
+    repoURL: https://bjw-s.github.io/helm-charts
+    targetRevision: "" # Latest
   syncPolicy:
     automated:
       prune: true

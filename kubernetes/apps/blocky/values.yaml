@@ -1,12 +1,9 @@
-# Blocky Configuration via Helm
-
 config:
   upstreams:
     groups:
       default:
         - tcp-tls:1.1.1.1:853
         - tcp-tls:8.8.8.8:853
-
   blocking:
     blackLists:
       ads:
@@ -14,16 +11,11 @@ config:
     clientGroupsBlock:
       default:
         - ads
-
   prometheus:
     enable: true
     path: /metrics
-
   caching:
     minTime: 5m
     maxTime: 30m
-
 service:
-  type: ClusterIP
-  externalIPs:
-    - 10.42.0.6
+  type: LoadBalancer

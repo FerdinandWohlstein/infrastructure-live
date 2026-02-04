@@ -46,6 +46,7 @@ spec:
         prometheus:
           prometheusSpec:
             retention: 10d
+            retentionSize: 5GB
             storageSpec:
               volumeClaimTemplate:
                 spec:
@@ -60,5 +61,4 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
     - ServerSideApply=true
