@@ -60,6 +60,27 @@
     state: present
   no_log: true
 
+- name: Create Observability Namespace
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        annotations:
+          argocd.argoproj.io/sync-wave: "-1"
+        name: observability
+    state: present
+
+- name: Apply Kubernetes Component Secrets
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  kubernetes.core.k8s:
+    definition: "{{ lookup('community.sops.sops', playbook_dir + '/../kubernetes/kubernetes-secrets.sops.yaml') | from_yaml_all | list }}"
+    state: present
+  no_log: true
+
 - name: Apply ArgoCD Root Application
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml

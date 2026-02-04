@@ -1,6 +1,6 @@
 ---
 - name: Rotate K3s Certificates
-  hosts: k3s_server
+  hosts: k3s-server
   become: true
   tasks:
     - name: Stop K3s service
