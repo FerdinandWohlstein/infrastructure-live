@@ -3,20 +3,25 @@ kind: Application
 metadata:
   finalizers:
   - resources-finalizer.argocd.argoproj.io
-  name: root-app
+  name: tempo
   namespace: argocd
 spec:
   destination:
-    namespace: argocd
+    namespace: observability
     server: https://kubernetes.default.svc
   project: default
   source:
-    directory:
-      recurse: true
-    path: kubernetes/apps
-    repoURL: "{{ repo_url }}"
-    targetRevision: main
+    chart: tempo
+    helm:
+      releaseName: tempo
+      values: |
+        tempo:
+          retention: 24h
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: "1.24.4"
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+    - ServerSideApply=true

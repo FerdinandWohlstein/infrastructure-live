@@ -33,6 +33,12 @@ ansible/decrypted_secrets.yaml
 **/decrypted_*.yaml
 **/decrypted_*.yml
 
+# WireGuard client configurations (contain private keys!)
+wg-clients/
+*.key
+server_private.key
+server_public.key
+
 # ===================
 # Kubernetes
 # ===================

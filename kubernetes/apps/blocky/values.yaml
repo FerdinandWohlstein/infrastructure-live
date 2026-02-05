@@ -1,0 +1,21 @@
+config:
+  upstreams:
+    groups:
+      default:
+        - tcp-tls:1.1.1.1:853
+        - tcp-tls:8.8.8.8:853
+  blocking:
+    blackLists:
+      ads:
+        - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+    clientGroupsBlock:
+      default:
+        - ads
+  prometheus:
+    enable: true
+    path: /metrics
+  caching:
+    minTime: 5m
+    maxTime: 30m
+service:
+  type: LoadBalancer
