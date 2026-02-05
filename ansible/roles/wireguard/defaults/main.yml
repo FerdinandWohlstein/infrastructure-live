@@ -9,3 +9,6 @@ wireguard_listen_port: 51820
 
 # WireGuard interface name
 wireguard_interface: wg0
+
+# WireGuard MTU
+wireguard_mtu: 1280

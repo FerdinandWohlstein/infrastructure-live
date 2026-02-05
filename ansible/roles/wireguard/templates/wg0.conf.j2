@@ -2,6 +2,7 @@
 PrivateKey = {{ wireguard_private_key }}
 Address = {{ wireguard_address }}
 ListenPort = {{ wireguard_listen_port }}
+MTU = {{ wireguard_mtu }}
 
 {% for peer in wireguard_peers %}
 [Peer]
