@@ -15,6 +15,3 @@ provider "aws" {
     }
   }
 }
-
-provider "sops" {
-}

@@ -49,11 +49,13 @@ variable "allocate_eip" {
 variable "ssh_public_key" {
   description = "SSH public key material (contents of id_ed25519.pub)"
   type        = string
+  default     = ""
 }
 
 variable "admin_cidrs" {
   description = "List of administrator CIDR blocks for SSH and WireGuard access"
   type        = list(string)
+  default     = []
 }
 
 variable "enable_ssh" {

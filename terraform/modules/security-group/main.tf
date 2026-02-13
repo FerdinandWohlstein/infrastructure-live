@@ -38,7 +38,7 @@ resource "aws_security_group" "this" {
       from_port        = 22
       to_port          = 22
       protocol         = "tcp"
-      cidr_blocks      = length(var.admin_cidrs) > 0 ? var.admin_cidrs : []
+      cidr_blocks      = var.admin_cidrs
       ipv6_cidr_blocks = []
     }
   }
@@ -48,7 +48,7 @@ resource "aws_security_group" "this" {
     from_port        = var.wireguard_port
     to_port          = var.wireguard_port
     protocol         = "udp"
-    cidr_blocks      = length(var.admin_cidrs) > 0 ? var.admin_cidrs : []
+    cidr_blocks      = var.admin_cidrs
     ipv6_cidr_blocks = []
   }
 

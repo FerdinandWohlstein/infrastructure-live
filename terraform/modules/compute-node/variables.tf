@@ -26,6 +26,7 @@ variable "ami_id" {
 variable "ssh_public_key" {
   type        = string
   description = "SSH public key material"
+  default     = ""
 }
 
 variable "security_group_id" {

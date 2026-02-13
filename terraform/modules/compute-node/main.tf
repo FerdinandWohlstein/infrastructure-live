@@ -1,4 +1,5 @@
 resource "aws_key_pair" "this" {
+  count      = var.ssh_public_key != "" ? 1 : 0
   key_name   = "${var.name}-ssh"
   public_key = var.ssh_public_key
 }
@@ -9,7 +10,7 @@ resource "aws_instance" "this" {
   availability_zone      = var.availability_zone
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.security_group_id]
-  key_name               = aws_key_pair.this.key_name
+  key_name               = var.ssh_public_key != "" ? aws_key_pair.this[0].key_name : null
 
   root_block_device {
     volume_type           = "gp3"

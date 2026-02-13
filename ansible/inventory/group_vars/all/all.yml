@@ -5,12 +5,13 @@
 aws_region: us-east-1
 
 # Network Configuration
-wireguard_address: "10.42.0.6"
-wireguard_network: "10.42.0.0/24"
+wireguard_address: "10.52.0.1/24"
+wireguard_network: "10.52.0.0/24"
 wireguard_listen_port: 51820
+wireguard_interface: wg0
+common_wireguard_listen_port: "{{ wireguard_listen_port }}"
 
 # K3s Configuration
-k3s_advertise_address: "10.42.0.6"
-k3s_node_ip: "3.220.139.83"
+k3s_advertise_address: "10.52.0.1"
 k3s_cluster_cidr: "10.68.0.0/16"
 k3s_service_cidr: "10.69.0.0/16"

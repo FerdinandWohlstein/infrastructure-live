@@ -11,8 +11,4 @@ PublicKey = {{ peer.public_key }}
 PresharedKey = {{ peer.preshared_key }}
 {% endif %}
 AllowedIPs = {{ peer.allowed_ips }}
-{% if peer.endpoint is defined and peer.endpoint %}
-Endpoint = {{ peer.endpoint }}
-{% endif %}
-PersistentKeepalive = 25
 {% endfor %}
