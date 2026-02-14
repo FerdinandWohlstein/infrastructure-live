@@ -21,8 +21,10 @@ graph TB
 
         subgraph Cluster [Trust Boundary: K3s Cluster]
             API[Container: Kubernetes API]
-            App[Container: Production App]
-            ESO[Container: External Secrets Operator]
+            Argo[Container: Argo CD]
+            App[Container: Nginx Test App]
+            Blocky[Container: Blocky DNS]
+            Obs[Container: Observability Stack]
         end
 
         subgraph Host_Level [Trust Boundary: Host-level Services]
@@ -37,5 +39,17 @@ graph TB
     Admin -->|VPN| WG
     WG -->|Private access| API
 
-    ESO -->|Pulls secrets| Vault
-    ESO -->|Writes Kubernetes Secrets| App
+    Argo -->|Applies desired state| App
+    Argo -->|Applies desired state| Blocky
+    App -->|Logs/metrics/traces| Obs
+    Blocky -->|Logs/metrics| Obs
+
+    classDef boundary fill:#f5f5f5,stroke:#616161,color:#212121;
+    classDef edge fill:#fff3e0,stroke:#ef6c00,color:#e65100;
+    classDef cluster fill:#e1f5fe,stroke:#01579b,color:#003b6f;
+    classDef runtime fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20;
+
+    class DNS_Edge,Private_Admin,Host_Level,Internet boundary;
+    class Edge edge;
+    class Cluster cluster;
+    class App,Blocky,Obs runtime;
