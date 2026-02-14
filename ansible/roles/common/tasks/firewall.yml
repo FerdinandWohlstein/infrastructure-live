@@ -40,40 +40,32 @@
     interface: "{{ wireguard_interface }}"
 
 # Kubernetes cluster networking - Allow pod and service networks
-- name: Allow traffic from pod network (cluster-cidr)
+- name: Allow traffic from Kubernetes networks
   community.general.ufw:
     rule: allow
-    from_ip: "{{ k3s_cluster_cidr }}"
-
-- name: Allow traffic from service network (service-cidr)
-  community.general.ufw:
-    rule: allow
-    from_ip: "{{ k3s_service_cidr }}"
+    from_ip: "{{ item }}"
+  loop:
+    - "{{ k3s_cluster_cidr }}"
+    - "{{ k3s_service_cidr }}"
 
 # Kubernetes routing - Allow forwarding between networks
-- name: Allow routing from pod network
+- name: Allow routing for Kubernetes networks
   community.general.ufw:
     rule: allow
     route: true
-    from_ip: "{{ k3s_cluster_cidr }}"
+    from_ip: "{{ item }}"
+  loop:
+    - "{{ k3s_cluster_cidr }}"
+    - "{{ k3s_service_cidr }}"
 
-- name: Allow routing from service network
+- name: Allow routing to Kubernetes networks
   community.general.ufw:
     rule: allow
     route: true
-    from_ip: "{{ k3s_service_cidr }}"
-
-- name: Allow routing to pod network
-  community.general.ufw:
-    rule: allow
-    route: true
-    to_ip: "{{ k3s_cluster_cidr }}"
-
-- name: Allow routing to service network
-  community.general.ufw:
-    rule: allow
-    route: true
-    to_ip: "{{ k3s_service_cidr }}"
+    to_ip: "{{ item }}"
+  loop:
+    - "{{ k3s_cluster_cidr }}"
+    - "{{ k3s_service_cidr }}"
 
 - name: Set default forward policy to ACCEPT for Kubernetes
   ansible.builtin.lineinfile:

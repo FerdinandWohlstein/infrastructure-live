@@ -13,21 +13,9 @@
     dest: /etc/apt/keyrings/docker.asc
     mode: '0644'
 
-- name: Remove conflicting Docker repository entries
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: absent
-  loop:
-    - /etc/apt/sources.list.d/docker.list
-  failed_when: false
-
 - name: Resolve Docker apt architecture
   ansible.builtin.set_fact:
     common_docker_repo_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_architecture] | default(ansible_architecture) }}"
-
-- name: Set Docker repository release
-  ansible.builtin.set_fact:
-    common_docker_repo_release: "{{ ansible_distribution_release }}"
 
 - name: Add Docker repository
   ansible.builtin.apt_repository:
@@ -35,109 +23,14 @@
       deb [arch={{ common_docker_repo_arch }}
       signed-by=/etc/apt/keyrings/docker.asc]
       https://download.docker.com/linux/ubuntu
-      {{ common_docker_repo_release }} stable
-    state: present
-    filename: docker
-    update_cache: false
-
-- name: Update apt cache
-  ansible.builtin.apt:
-    update_cache: true
-    cache_valid_time: 3600
-
-- name: Check Docker CE candidate for current release
-  ansible.builtin.command: apt-cache policy docker-ce
-  register: common_docker_ce_policy
-  changed_when: false
-
-- name: Fallback Docker repository release to jammy
-  ansible.builtin.set_fact:
-    common_docker_repo_release: jammy
-  when:
-    - "'Candidate: (none)' in common_docker_ce_policy.stdout"
-    - ansible_distribution_release != 'jammy'
-
-- name: Reconfigure Docker repository with fallback release
-  ansible.builtin.apt_repository:
-    repo: >-
-      deb [arch={{ common_docker_repo_arch }}
-      signed-by=/etc/apt/keyrings/docker.asc]
-      https://download.docker.com/linux/ubuntu
-      {{ common_docker_repo_release }} stable
+      {{ ansible_distribution_release }} stable
     state: present
     filename: docker
     update_cache: true
-  when: common_docker_repo_release == 'jammy'
-
-- name: Check package availability
-  ansible.builtin.command: "apt-cache policy {{ item }}"
-  register: common_package_policy
-  changed_when: false
-  loop: "{{ common_packages + common_docker_packages }}"
-
-- name: Build missing package list
-  ansible.builtin.set_fact:
-    common_missing_packages: >-
-      {{
-        common_package_policy.results
-        | selectattr('stdout', 'search', 'Candidate: \\\((none)\\\)')
-        | map(attribute='item')
-        | list
-      }}
-
-- name: Select Docker package set
-  ansible.builtin.set_fact:
-    common_effective_docker_packages: >-
-      {{
-        common_docker_fallback_packages
-        if (common_docker_packages
-            | intersect(common_missing_packages)
-            | length > 0)
-        else common_docker_packages
-      }}
-
-- name: Check fallback Docker package availability
-  ansible.builtin.command: "apt-cache policy {{ item }}"
-  register: common_docker_fallback_policy
-  changed_when: false
-  loop: "{{ common_effective_docker_packages }}"
-
-- name: Build missing fallback Docker package list
-  ansible.builtin.set_fact:
-    common_missing_fallback_docker_packages: >-
-      {{
-        common_docker_fallback_policy.results |
-        selectattr('stdout', 'search', 'Candidate: \\(none\\)') |
-        map(attribute='item') | list
-      }}
-
-- name: Build missing non-docker package list
-  ansible.builtin.set_fact:
-    common_missing_non_docker_packages: "{{ common_missing_packages | difference(common_docker_packages) }}"
-
-- name: Fail when required non-docker packages are unavailable
-  ansible.builtin.fail:
-    msg: "Missing required apt packages: {{ common_missing_non_docker_packages | join(', ') }}"
-  when: common_missing_non_docker_packages | length > 0
-
-- name: Fail when no Docker package set is available
-  ansible.builtin.fail:
-    msg: >-
-      Docker packages unavailable.
-      Preferred missing: {{
-        common_docker_packages
-        | intersect(common_missing_packages)
-        | join(', ')
-      }}.
-      Fallback missing: {{
-        common_missing_fallback_docker_packages
-        | join(', ')
-      }}
-  when: common_missing_fallback_docker_packages | length > 0
 
 - name: Install required packages
   ansible.builtin.apt:
-    name: "{{ common_packages + common_effective_docker_packages }}"
+    name: "{{ common_packages + common_docker_packages }}"
     state: present
-    update_cache: false
+    update_cache: true
     cache_valid_time: 3600
