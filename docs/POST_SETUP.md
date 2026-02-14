@@ -184,4 +184,37 @@ kubectl get nodes -A
 
 ---
 
+## 11) HashiCorp Vault integration plan (learning-first, one node) 🏦
+
+Goal: gradually move from "SOPS-only + AWS-managed secrets access keys" to "SOPS for bootstrap + Vault for runtime/app secrets", while keeping the setup simple.
+
+### A) What can move from SOPS/AWS into Vault first
+
+Current encrypted keys in `ansible/inventory/group_vars/all/secrets.sops.yaml`:
+- `wireguard_private_key` / `wireguard_peers`: **keep in SOPS** for now (host bootstrap/network baseline).
+- `vault_aws_access_key_id` / `vault_aws_secret_access_key`: **remove first** by switching Vault to EC2 instance profile permissions for KMS auto-unseal.
+- `github_token`: **move to Vault** (and deliver to workloads via External Secrets Operator).
+- `github_user`, `repo_url`, `k3s_server_host`: **can stay outside Vault** (not high-risk secrets; keep in normal vars or SOPS if preferred).
+
+### B) One-node Vault cluster recommendation (best for learning)
+
+Use a **single Vault node** on the existing K3s server (already close to current role), but switch storage from file to integrated Raft:
+1. Keep Docker-based deployment and TLS as-is.
+2. Change Vault storage to `storage "raft"` with `path = "/vault/data"` and `node_id = "vault-1"`.
+3. Keep AWS KMS seal (`seal "awskms"`) for auto-unseal.
+4. Enable UI and audit log to file to practice policy/audit workflows.
+5. Add a scheduled `vault operator raft snapshot save` backup task (single-node safety net).
+
+### C) Incremental rollout plan
+
+1. **Bootstrap phase (current):** keep SOPS for initial Ansible bootstrap secrets.
+2. **Platform phase:** remove static AWS access keys from SOPS and use IAM instance profile for Vault KMS access.
+3. **App-secret phase:** create Vault KV v2 paths (for example `kv/data/apps/argocd`) and migrate `github_token`.
+4. **Kubernetes phase:** configure External Secrets Operator to read from Vault and materialize K8s Secrets.
+5. **Hardening phase:** tighten Vault policies, enable audit review, and rotate migrated secrets.
+
+This approach optimizes for learning HashiCorp workflows without introducing HA complexity too early.
+
+---
+
 If needed, a `scripts/` helper can be added to automate `terraform -> inventory -> ansible -> kubeconfig` steps.
