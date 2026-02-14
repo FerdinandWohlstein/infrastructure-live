@@ -30,12 +30,23 @@ Every push and PR to `main` triggers:
 ## 🚀 Getting Started
 
 1. **Provision Infrastructure:** Navigate to `terraform/k3s-cluster` and run `terraform apply`.
-2. **Configure Hosts:** Bootstrap nodes with Ansible:
+   - EC2 instances are automatically bootstrapped via `user_data` script that installs:
+     - Core dependencies (git, Python, Ansible, SOPS, WireGuard)
+     - Ansible configuration pulled from this repository
+     - Architecture-aware SOPS binary (amd64/arm64)
+2. **Configure Hosts:** Complete configuration with Ansible (bootstrap script handles initial setup):
    ```bash
    cd ansible
    ansible-playbook site.yml
    ```
 3. **Deploy Applications:** Argo CD automatically syncs from `kubernetes/bootstrap/root.yaml` pointing to the `main` branch.
+
+### 🔧 Dynamic Docker Repository Handling
+
+The Ansible playbooks include intelligent Docker installation with:
+- **Architecture Detection:** Automatically maps `x86_64` → `amd64`, `aarch64` → `arm64`
+- **Release Fallback:** Falls back to `jammy` repository if Docker packages aren't available for your Ubuntu release
+- **Dual Package Validation:** Checks both `docker-ce` (preferred) and `docker-io` (fallback) to ensure installation succeeds
 
 ## ⚙️ Maintenance & Operations
 
