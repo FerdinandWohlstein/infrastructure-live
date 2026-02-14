@@ -7,6 +7,8 @@
 .terraform.tfstate.lock.info
 crash.log
 crash.*.log
+*.tfplan
+tfplan
 
 # Exclude tfvars (may contain secrets)
 *.tfvars
