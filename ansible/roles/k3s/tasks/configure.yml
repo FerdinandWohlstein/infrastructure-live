@@ -28,7 +28,7 @@
       {% for san in k3s_tls_san_list | unique %}
         - {{ san }}
       {% endfor %}
-      write-kubeconfig-mode: {{ k3s_write_kubeconfig_mode }}
+      write-kubeconfig-mode: {{ k3s_write_kubeconfig_mode | string }}
     dest: /etc/rancher/k3s/config.yaml
     mode: '0644'
   notify: Restart K3s
