@@ -16,6 +16,11 @@ variable "terraform_role_arn" {
   sensitive   = true
 }
 
+variable "sops_kms_key_arn" {
+  description = "KMS key ARN used by the EC2 instance role to decrypt SOPS secrets"
+  type        = string
+}
+
 variable "availability_zone" {
   description = "AWS availability zone for resource deployment"
   type        = string

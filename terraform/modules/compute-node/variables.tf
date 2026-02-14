@@ -34,6 +34,11 @@ variable "security_group_id" {
   description = "Security group id to attach to the instance"
 }
 
+variable "sops_kms_key_arn" {
+  type        = string
+  description = "KMS key ARN used to decrypt SOPS secrets"
+}
+
 variable "allocate_eip" {
   type        = bool
   description = "Allocate and associate an Elastic IP"

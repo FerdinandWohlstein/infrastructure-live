@@ -2,6 +2,8 @@
 - name: Bootstrap Infrastructure
   hosts: all
   become: true
+  vars_files:
+    - inventory/group_vars/all/all.yml
   vars:
     aws_region: "{{ lookup('env', 'AWS_REGION') | default('us-east-1', true) }}"
     vault_kms_key_id: "{{ lookup('env', 'VAULT_KMS_KEY_ID') | default('f7eafd84-0824-4c61-9a23-f6a296b95c6e', true) }}"

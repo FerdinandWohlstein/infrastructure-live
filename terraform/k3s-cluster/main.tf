@@ -63,6 +63,7 @@ module "node" {
   root_volume_size = var.root_volume_size
   environment      = var.environment
   project          = var.project
+  sops_kms_key_arn = var.sops_kms_key_arn
 
   security_group_id = module.firewall.security_group_id
 }

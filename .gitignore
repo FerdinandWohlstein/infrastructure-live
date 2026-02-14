@@ -89,3 +89,4 @@ secrets.md
 terraform/k3s-cluster/.terraform.lock.hcl
 
 docs/learnings/*
+terraform/k3s-cluster/terraform.tfvars.example

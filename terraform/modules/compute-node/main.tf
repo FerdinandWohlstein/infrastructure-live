@@ -4,6 +4,48 @@ resource "aws_key_pair" "this" {
   public_key = var.ssh_public_key
 }
 
+data "aws_iam_policy_document" "ec2_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "this" {
+  name               = "${var.name}-node-role"
+  assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
+
+  tags = {
+    Name        = "${var.name}-node-role"
+    Environment = var.environment
+    Project     = var.project
+    ManagedBy   = "terraform"
+  }
+}
+
+data "aws_iam_policy_document" "sops_decrypt" {
+  statement {
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = [var.sops_kms_key_arn]
+  }
+}
+
+resource "aws_iam_role_policy" "sops_decrypt" {
+  name   = "${var.name}-sops-kms-decrypt"
+  role   = aws_iam_role.this.id
+  policy = data.aws_iam_policy_document.sops_decrypt.json
+}
+
+resource "aws_iam_instance_profile" "this" {
+  name = "${var.name}-node-profile"
+  role = aws_iam_role.this.name
+}
+
 resource "aws_instance" "this" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
@@ -11,6 +53,9 @@ resource "aws_instance" "this" {
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.security_group_id]
   key_name               = var.ssh_public_key != "" ? aws_key_pair.this[0].key_name : null
+  iam_instance_profile   = aws_iam_instance_profile.this.name
+
+  user_data = file("${path.module}/bootstrap.sh")
 
   root_block_device {
     volume_type           = "gp3"
