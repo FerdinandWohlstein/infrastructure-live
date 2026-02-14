@@ -18,12 +18,12 @@
     - "{{ vault_data_dir }}"
 
 - name: Generate self-signed certificate for Vault
-  ansible.builtin.command: >
-    openssl req -new -newkey rsa:4096 -days {{ vault_tls_cert_days }} -nodes -x509
-    -subj "/C=US/ST=State/L=City/O=Org/CN={{ vault_tls_cert_cn }}"
-    -keyout {{ vault_tls_dir }}/vault.key
-    -out {{ vault_tls_dir }}/vault.crt
-  args:
+  ansible.builtin.command:
+    cmd: >
+      openssl req -new -newkey rsa:4096 -days {{ vault_tls_cert_days }} -nodes -x509
+      -subj "/C=US/ST=State/L=City/O=Org/CN={{ vault_tls_cert_cn }}"
+      -keyout {{ vault_tls_dir }}/vault.key
+      -out {{ vault_tls_dir }}/vault.crt
     creates: "{{ vault_tls_dir }}/vault.crt"
 
 - name: Set permissions on Vault TLS key
