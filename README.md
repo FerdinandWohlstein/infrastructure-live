@@ -46,7 +46,7 @@ Every push and PR to `main` triggers:
 The Ansible playbooks include intelligent Docker installation with:
 - **Architecture Detection:** Automatically maps `x86_64` → `amd64`, `aarch64` → `arm64`
 - **Release Fallback:** Falls back to `jammy` repository if Docker packages aren't available for your Ubuntu release
-- **Dual Package Validation:** Checks both `docker-ce` (preferred) and `docker.io` (Ubuntu fallback) to ensure installation succeeds
+- **Conditional Package Fallback:** Preferentially installs `docker-ce` packages and only falls back to Ubuntu `docker.io`/`containerd` packages if the preferred packages are unavailable
 
 ## ⚙️ Maintenance & Operations
 
