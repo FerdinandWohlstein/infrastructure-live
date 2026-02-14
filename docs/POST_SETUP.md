@@ -2,6 +2,8 @@
 
 Commands and checks to perform after infrastructure bootstrap. Follow in order.
 
+> **Note:** Terraform automatically runs a bootstrap script (`bootstrap.sh`) via EC2 `user_data` that installs core dependencies, SOPS, Ansible, and applies initial configuration via `ansible-pull`. The steps below are for additional configuration, customization, and connecting to your cluster.
+
 ---
 
 ## 1) Environment & prerequisites 🔧
@@ -32,6 +34,14 @@ terraform -chdir=terraform/k3s-cluster plan -out=tfplan
 ```bash
 terraform -chdir=terraform/k3s-cluster apply -input=false -auto-approve tfplan
 ```
+
+> **Automatic Bootstrap:** The EC2 instance will automatically execute `bootstrap.sh` during first boot, which:
+> - Installs git, Python, Ansible, SOPS, WireGuard, and other core dependencies
+> - Clones this repository
+> - Runs `ansible-pull` to apply initial host configuration
+> - Logs all output to `/var/log/user-data.log`
+>
+> You can monitor the bootstrap process with: `ssh ubuntu@<instance-ip> tail -f /var/log/user-data.log`
 
 3. Get the instance/public IPs after apply:
 
@@ -90,6 +100,9 @@ sops -e -i ansible/inventory/group_vars/all/secrets.sops.yaml
 ---
 
 ## 5) Run Ansible to configure the server (dry-run then apply) ⚙️
+
+> **Note:** The bootstrap script already ran `ansible-pull` during instance initialization. This step is for applying additional configuration changes or updates.
+
 1. Dry‑run (recommended):
 
 ```bash
@@ -105,6 +118,7 @@ ansible-playbook -i ansible/inventory ansible/site.yml --limit k3s-server
 Notes:
 - If you only want to run WireGuard, tag the playbook or run the role directly.
 - Troubleshooting: run `ansible -i ansible/inventory k3s-server -m ping` to verify connectivity.
+- The bootstrap script logs are available at `/var/log/user-data.log` on the server.
 
 ---
 
@@ -166,7 +180,7 @@ kubectl get nodes -A
 ---
 
 ## 10) Quick checklist (one‑liner summary) ✅
-1) terraform apply → 2) update `hosts.yml` → 3) sops edit & encrypt secrets → 4) ansible-playbook apply → 5) copy kubeconfig & edit server address → 6) bring up client WG
+1) terraform apply (runs automatic bootstrap) → 2) update `hosts.yml` → 3) sops edit & encrypt secrets → 4) ansible-playbook apply (optional, for additional config) → 5) copy kubeconfig & edit server address → 6) bring up client WG
 
 ---
 

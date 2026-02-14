@@ -20,5 +20,10 @@ common_docker_packages:
   - docker-ce-cli
   - containerd.io
 
+# Fallback Docker packages (Ubuntu repository versions)
+common_docker_fallback_packages:
+  - docker.io
+  - containerd
+
 # WireGuard defaults
 common_wireguard_listen_port: "51820"
