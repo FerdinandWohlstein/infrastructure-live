@@ -6,4 +6,3 @@
     name: docker
     state: started
     enabled: true
-    daemon_reload: false
