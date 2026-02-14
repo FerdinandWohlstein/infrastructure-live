@@ -36,7 +36,7 @@ After Terraform provisions the infrastructure:
 
 2. **Manual Configuration (Optional):** For additional configuration or updates, run Ansible playbooks manually:
    ```bash
-   cd ansible
+   cd ../../ansible
    ansible-playbook -i inventory site.yml
    ```
 
