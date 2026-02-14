@@ -65,5 +65,6 @@ sops --encrypt --kms <KMS_ARN> new_secret.yaml > new_secret.sops.yaml
 ## 📖 Documentation
 
 - **Architecture:** [C4 System Diagram](docs/c4_system.mmd), [C4 Container Diagram](docs/c4_container.mmd)
+- **Networking Plan:** [Cilium Migration Plan](docs/cilium-migration-plan.md)
 - **Security:** [Security Checklist](docs/learnings/infrastructure_checklist.md)
 - **Learnings:** [DevOps Best Practices](docs/learnings/infrastructure_checklist.md)
