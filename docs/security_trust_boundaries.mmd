@@ -39,8 +39,7 @@ graph TB
     Admin -->|VPN| WG
     WG -->|Private access| API
 
-    Argo -->|Applies desired state| App
-    Argo -->|Applies desired state| Blocky
+    Argo -->|Applies desired state| Cluster
     App -->|Logs/metrics/traces| Obs
     Blocky -->|Logs/metrics| Obs
 
