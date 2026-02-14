@@ -2,26 +2,26 @@ checks:
   # Enable additional security checks
   addAllBuiltIn: true
   exclude:
-    # Infrastructure is in early stage; strict resource limits can wait
+    # Resource limits not yet required
     - "unset-cpu-requirements"
     - "unset-memory-requirements"
-    # Overkill for a home lab/test environment
+    # Not needed for single-node lab
     - "minimum-three-replicas"
-    # Metadata requirements are too verbose for a solo project
+    # Metadata verbose for solo project
     - "required-annotation-email"
     - "required-label-owner"
-    # High-availability features not required for current single-node or small cluster setup
+    # HA features not required
     - "no-node-affinity"
     - "no-rolling-update-strategy"
-    # Edge-case networking/DNS configs that aren't relevant for standard apps
+    # Not relevant for standard apps
     - "dnsconfig-options"
-    # Port 80/443 is common for web services; unprivileged images handle this internally
+    # Standard for web services
     - "privileged-ports"
-    # NetworkPolicies will be handled globally or in a later hardening phase
+    # Handled globally
     - "non-isolated-pod"
-    # Developer convenience for base applications
+    # Base applications convenience
     - "default-service-account"
-    # Technical necessity: Many standard images (like default Nginx) require write access to /var/run etc.
+    # Standard images need write access
     - "no-read-only-root-fs"
-    # Redundant: Deployments default to 'Always', which is the desired behavior
+    # Deployments default to 'Always'
     - "restart-policy"

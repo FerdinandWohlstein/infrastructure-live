@@ -1,6 +1,6 @@
 # K3s Cluster Infrastructure
 
-Provisions a secure AWS EC2 host for a single-node K3s deployment. This module manages the core infrastructure components required for a production-ready GitOps platform.
+Provisions a secure single-node K3s cluster on AWS EC2.
 
 ## Infrastructure Components
 
@@ -18,7 +18,7 @@ terraform apply
 
 ## Configuration
 
-Ensure `terraform.tfvars` is populated with the required variables, including `ssh_public_key` and `admin_cidrs`.
+Set the required variables in `terraform.tfvars`, including `ssh_public_key` and `admin_cidrs`.
 
 ## Post-Provisioning
 

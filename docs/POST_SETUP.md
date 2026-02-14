@@ -1,6 +1,6 @@
 # Post‑setup checklist — Terraform → Ansible → WireGuard → Kubeconfig
 
-This document lists the exact commands and checks to perform immediately after a fresh infrastructure bootstrap (Terraform → Ansible). Follow the steps in order.
+Commands and checks to perform after infrastructure bootstrap. Follow in order.
 
 ---
 
@@ -158,7 +158,7 @@ kubectl get nodes -A
 ---
 
 ## 9) Common post‑setup gotchas & tips 💡
-- Always keep `secrets.sops.yaml` encrypted with `sops` — never commit plaintext.
+- Keep `secrets.sops.yaml` encrypted with `sops` — never commit plaintext.
 - Security Group: allow UDP/51820 from client IP(s) and SSH only from admin CIDRs.
 - If Ansible can't SSH: verify `ansible_host` in `ansible/inventory/hosts.yml` and your SSH key (`~/.ssh/id_ed25519`).
 - Use WireGuard when possible — it's the intended access path for admin traffic.
@@ -170,6 +170,4 @@ kubectl get nodes -A
 
 ---
 
-If you want, I can also:
-- add this file to the repo (done),
-- create a small `scripts/` helper to automate `terraform -> inventory -> ansible -> kubeconfig` steps.
+If needed, a `scripts/` helper can be added to automate `terraform -> inventory -> ansible -> kubeconfig` steps.

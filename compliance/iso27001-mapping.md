@@ -1,13 +1,13 @@
 # ISO 27001 Control Mapping
 
-This document provides a mapping of infrastructure components to ISO/IEC 27001:2022 control themes to ensure compliance and auditability.
+Infrastructure components mapped to ISO/IEC 27001:2022 control themes.
 
 - Primary Architecture: [docs/c4_system.mmd](../docs/c4_system.mmd) and [docs/c4_container.mmd](../docs/c4_container.mmd)
 - Security Policy: [SECURITY.md](../SECURITY.md)
 
 ## Mapping Methodology
 
-Infrastructure components are mapped to specific control themes including access control, change management, network security, and redundancy. Each mapping is supported by verifiable implementation evidence.
+Each component is mapped to relevant control themes (access control, change management, network security, redundancy) with verifiable evidence.
 
 ## Component Mapping Matrix
 

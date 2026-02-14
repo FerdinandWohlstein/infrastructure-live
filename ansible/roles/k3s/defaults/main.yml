@@ -6,7 +6,7 @@ k3s_force_reinstall: false
 
 # K3s network configuration
 k3s_bind_address: "0.0.0.0"
-# Note: advertise-address and node-ip are auto-detected from ansible_default_ipv4.address
+# advertise-address and node-ip auto-detected from ansible_default_ipv4.address
 
 # K3s options
 k3s_disable_network_policy: true
