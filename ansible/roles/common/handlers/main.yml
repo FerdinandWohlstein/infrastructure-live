@@ -1,10 +1,10 @@
 ---
 - name: Restart SSH
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: ssh
     state: restarted
 
 - name: Reload UFW
-  ansible.builtin.shell: ufw disable && ufw enable
-  args:
+  ansible.builtin.shell:
+    cmd: ufw disable && ufw enable
     executable: /bin/bash

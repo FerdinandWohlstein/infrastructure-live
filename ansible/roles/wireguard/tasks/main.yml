@@ -23,7 +23,7 @@
   notify: Restart WireGuard
 
 - name: Ensure WireGuard is started and enabled
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: wg-quick@{{ wireguard_interface }}
     state: started
     enabled: true

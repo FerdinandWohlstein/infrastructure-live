@@ -36,10 +36,10 @@
   when: k3s_force_reinstall | default(false)
 
 - name: Check for conflicting cni0 interface
-  ansible.builtin.shell: |
-    set -o pipefail
-    ip addr show cni0 2>/dev/null | grep -q '10\.42\.0\.1'
-  args:
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      ip addr show cni0 2>/dev/null | grep -q '10\.42\.0\.1'
     executable: /bin/bash
   changed_when: false
   failed_when: false

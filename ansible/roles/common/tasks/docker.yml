@@ -2,7 +2,8 @@
 # Docker service tasks
 
 - name: Ensure Docker is started and enabled
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: docker
     state: started
     enabled: true
+    daemon_reload: false
